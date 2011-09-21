@@ -5,6 +5,14 @@
     Konrad Markus <konker@gmail.com>
 */
 
+/* TODO:
+    - Should some current exceptions be converted into events?
+        - Exceptions for system errors rather than game-play errors?
+
+    - Do we need START/STOP events?
+
+    - History/undo/redo
+*/
 
 var tateti = (function() {
 
@@ -38,6 +46,8 @@ var tateti = (function() {
     var EVENT_TYPE_MOVE  = 'MOVE';
     var EVENT_TYPE_WIN   = 'WIN';
     var EVENT_TYPE_RESET = 'RESET';
+
+    var NO_HISTORY = 1;
 
     /* board graph */
     var graph = {
@@ -84,22 +94,7 @@ var tateti = (function() {
         
     }
 
-    /* event class */
-    function BoardEvent(type, target, move, win) {
-        this.type = type;
-        this.target = target;
-        this.move = move || null;
-        this.win = win || null;
-    }
-    BoardEvent.prototype.toString = function() {
-        var s = "BoardEvent: " + this.type + ": " + this.move;
-        if (this.win) {
-            s += ", win: " + this.win;
-        }
-        return s;
-    }
-
-    /* Board constructor */
+    /* Board class */
     function Board() {
         /* struct representing the board */
         this.rep = {};
@@ -115,7 +110,7 @@ var tateti = (function() {
         this.onboard[P2] = 0;
 
         /* track history */
-        //this.history = new History(this);
+        this.history = new History(this);
     }
     Board.mixin(morningwood.Evented);
 
@@ -129,10 +124,10 @@ var tateti = (function() {
         this.rep[node] = EMPTY;
     }
     /* [TODO: desc] */
-    Board.prototype.unset = function(node) {
-        var p = this.rep[node];
-        this._unset(node);
-        this.rep[node] = EMPTY;
+    Board.prototype.unset = function(move) {
+        var p = this.rep[move.node1];
+        this._unset(move.node1);
+        this.rep[move.node1] = EMPTY;
         this.lastTurn = tateti.not(p);
     }
 
@@ -161,7 +156,7 @@ var tateti = (function() {
 
             var move = new BoardMove(BOARD_MOVE_TYPE_SET, p, node1, null);
             if (!_no_history) {
-                //this.history.push(move);
+                this.history.push(move);
             }
 
             if (this.onboard[P1] == 0 && this.onboard[P2] == 0) {
@@ -187,8 +182,8 @@ var tateti = (function() {
     
     }
     /* [TODO: desc] */
-    Board.prototype.unmove = function(node1, node2) {
-        this.move(node2, node1, NO_HISTORY);
+    Board.prototype.unmove = function(move) {
+        this.move(move.node2, move.node1, NO_HISTORY);
     }
     /* move a piece from node1 to node2 */
     Board.prototype.move = function(node1, node2, _no_history) {
@@ -209,7 +204,7 @@ var tateti = (function() {
 
                     var move = new BoardMove(BOARD_MOVE_TYPE_MOVE, p, node1, node2);
                     if (!_no_history) {
-                        //this.history.push(move);
+                        this.history.push(move);
                     }
                     var e = new BoardEvent(EVENT_TYPE_MOVE, this, move);
                     this.dispatchEvent(e);
@@ -295,6 +290,86 @@ var tateti = (function() {
         return s;
     }
 
+    /* history class */
+    function History(board) {
+        this.board = board;
+
+        // maintain a history of moves as a list of BoardMove objs
+        this.rep = [],
+        this.ptr = -1;
+    }
+    /* push an event on to the history stack */
+    History.prototype.push = function(move) {
+        this.rep = this.rep.slice(0, this.ptr+1);
+        this.rep.push(move);
+        ++this.ptr;
+    
+    }
+    /* move one step back in history if possible */
+    History.prototype.undo = function() {
+        if (this.canUndo()) {
+            var item = this.rep[this.ptr];
+            if (item.type == BOARD_MOVE_TYPE_MOVE) {
+                this.board.unmove(item);
+            }
+            else {
+                this.board.unset(item);
+            }
+            if (this.ptr == 0) {
+                this.board.lastTurn = null;
+            }
+            this.board.gameOver = false;
+            --this.ptr;
+            return item;
+        }
+        return null;
+    }
+    /* move one step forwards in history if possible */
+    History.prototype.redo = function() {
+        if (this.canRedo()) {
+            var move = this.rep[this.ptr+1];
+            if (move.type == BOARD_MOVE_TYPE_MOVE) {
+                this.board.move(move.p, move.node1, move.node2, NO_HISTORY);
+            }
+            else {
+                this.board.set(move.p, move.node1, NO_HISTORY);
+            }
+            ++this.ptr;
+            return m;
+        }
+        return null;
+    }
+    /* test to see if undo is possible */
+    History.prototype.canUndo = function() {
+        return (this.ptr >= 0);
+    }
+    /* test to see if redo is possible */
+    History.prototype.canRedo = function() {
+        return (this.rep.length > (this.ptr + 1));
+    }
+    History.prototype.toString = function() {
+        var s = "ptr: " + this.ptr + "\n";
+        for (var move in this.rep) {
+            s += this.rep[move];
+        }
+        return s;
+    }
+
+    /* event class */
+    function BoardEvent(type, target, move, win) {
+        this.type = type;
+        this.target = target;
+        this.move = move || null;
+        this.win = win || null;
+    }
+    BoardEvent.prototype.toString = function() {
+        var s = "BoardEvent: " + this.type + ": " + this.move;
+        if (this.win) {
+            s += ", win: " + this.win;
+        }
+        return s;
+    }
+
     /* exception class */
     function BoardException(msg, code) {
         this.msg = msg;
@@ -330,6 +405,7 @@ var tateti = (function() {
         BoardMove: BoardMove,
         BoardEvent: BoardEvent,
         BoardException: BoardException,
+        History: History,
 
         not: function(c) {
             if (c == P1) {
@@ -342,6 +418,9 @@ var tateti = (function() {
 var foo = new Object();
 foo.onevent = function(e) {
     console.log("EVENT RECV: " + e);
+    console.log('-------H-------');
+    console.log(e.target.history.toString());
+    console.log('-------H-------');
 }
 var b = new tateti.Board();
 b.addEventListener(tateti.EVENT_TYPE_START, foo.onevent);
@@ -364,6 +443,10 @@ console.log(b.toString());
 b.set(tateti.P2, tateti.I);
 console.log(b.toString());
 b.move(tateti.G, tateti.D);
+console.log(b.toString());
+b.history.undo();
+console.log(b.toString());
+b.move(tateti.C, tateti.F);
 console.log(b.toString());
 b.move(tateti.I, tateti.H);
 console.log(b.toString());
