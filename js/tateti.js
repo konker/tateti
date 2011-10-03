@@ -136,7 +136,7 @@ var tateti = (function() {
         this.rep[node1] = p;
     }
     /* set the state of the cell at the given board node to be player p */
-    Board.prototype.set = function(p, node1, _no_history) {
+    Board.prototype.set = function(p, node1, ID, _no_history) {
         if (this.gameOver) {
             throw new BoardException("Game over", 50);
         }
@@ -161,20 +161,20 @@ var tateti = (function() {
 
             if (this.onboard[P1] == 0 && this.onboard[P2] == 0) {
                 // nothing on board => game is starting
-                var e = new BoardEvent(EVENT_TYPE_START, this, move, win);
+                var e = new BoardEvent(EVENT_TYPE_START, this, move, ID);
                 this.dispatchEvent(e);
             }
 
             ++this.onboard[p];
-            var e = new BoardEvent(EVENT_TYPE_SET, this, move);
+            var e = new BoardEvent(EVENT_TYPE_SET, this, move, ID);
             this.dispatchEvent(e);
 
             var win = this.checkWinner();
             if (win) {
-                e = new BoardEvent(EVENT_TYPE_WIN, this, move, win);
+                e = new BoardEvent(EVENT_TYPE_WIN, this, move, ID, win);
                 this.dispatchEvent(e);
 
-                e = new BoardEvent(EVENT_TYPE_STOP, this, move, win);
+                e = new BoardEvent(EVENT_TYPE_STOP, this, move, ID, win);
                 this.dispatchEvent(e);
             }
             return;
@@ -186,7 +186,7 @@ var tateti = (function() {
         this.move(move.node2, move.node1, NO_HISTORY);
     }
     /* move a piece from node1 to node2 */
-    Board.prototype.move = function(node1, node2, _no_history) {
+    Board.prototype.move = function(node1, node2, ID, _no_history) {
         if (this.gameOver) {
             throw new BoardException("Game over", 50);
         }
@@ -206,15 +206,15 @@ var tateti = (function() {
                     if (!_no_history) {
                         this.history.push(move);
                     }
-                    var e = new BoardEvent(EVENT_TYPE_MOVE, this, move);
+                    var e = new BoardEvent(EVENT_TYPE_MOVE, this, move, ID);
                     this.dispatchEvent(e);
 
                     var win = this.checkWinner();
                     if (win) {
-                        e = new BoardEvent(EVENT_TYPE_WIN, this, move, win);
+                        e = new BoardEvent(EVENT_TYPE_WIN, this, move, ID, win);
                         this.dispatchEvent(e);
 
-                        e = new BoardEvent(EVENT_TYPE_STOP, this, move, win);
+                        e = new BoardEvent(EVENT_TYPE_STOP, this, move, ID, win);
                         this.dispatchEvent(e);
                     }
                     return;
@@ -328,11 +328,11 @@ var tateti = (function() {
     History.prototype.redo = function() {
         if (this.canRedo()) {
             var move = this.rep[this.ptr+1];
-            if (move.type == BOARD_MOVE_TYPE_MOVE) {
-                this.board.move(move.p, move.node1, move.node2, NO_HISTORY);
+            if (move.type == BOARD_MOVE_TYPE_SET) {
+                this.board.set(move.p, move.node1, NO_HISTORY);
             }
             else {
-                this.board.set(move.p, move.node1, NO_HISTORY);
+                this.board.move(move.p, move.node1, move.node2, NO_HISTORY);
             }
             ++this.ptr;
             return m;
@@ -356,14 +356,15 @@ var tateti = (function() {
     }
 
     /* event class */
-    function BoardEvent(type, target, move, win) {
+    function BoardEvent(type, target, move, ID, win) {
         this.type = type;
         this.target = target;
         this.move = move || null;
+        this.ID = ID || null;
         this.win = win || null;
     }
     BoardEvent.prototype.toString = function() {
-        var s = "BoardEvent: " + this.type + ": " + this.move;
+        var s = "BoardEvent:[" + this.ID + "]:" + this.type + ": " + this.move;
         if (this.win) {
             s += ", win: " + this.win;
         }
@@ -415,12 +416,21 @@ var tateti = (function() {
         }
     }
 })();
+var testID1 = 'testID1';
+var testID2 = 'testID2';
 var foo = new Object();
 foo.onevent = function(e) {
-    console.log("EVENT RECV: " + e);
-    console.log('-------H-------');
-    console.log(e.target.history.toString());
-    console.log('-------H-------');
+    if (e.ID == testID1) {
+        console.log('SWALLOWING OWN EVENT');
+        console.log(b.toString());
+    }
+    else {
+        console.log("EVENT RECV: " + e);
+        console.log('-------H-------');
+        console.log(e.target.history.toString());
+        console.log('-------H-------');
+        console.log(b.toString());
+    }
 }
 var b = new tateti.Board();
 b.addEventListener(tateti.EVENT_TYPE_START, foo.onevent);
@@ -430,25 +440,25 @@ b.addEventListener(tateti.EVENT_TYPE_MOVE, foo.onevent);
 b.addEventListener(tateti.EVENT_TYPE_SET, foo.onevent);
 b.addEventListener(tateti.EVENT_TYPE_WIN, foo.onevent);
 console.log(b);
-b.set(tateti.P1, tateti.A);
-console.log(b.toString());
-b.set(tateti.P2, tateti.B);
-console.log(b.toString());
-b.set(tateti.P1, tateti.C);
-console.log(b.toString());
-b.set(tateti.P2, tateti.E);
-console.log(b.toString());
-b.set(tateti.P1, tateti.G);
-console.log(b.toString());
-b.set(tateti.P2, tateti.I);
-console.log(b.toString());
-b.move(tateti.G, tateti.D);
-console.log(b.toString());
+b.set(tateti.P1, tateti.A, testID1);
+//console.log(b.toString());
+b.set(tateti.P2, tateti.B, testID2);
+//console.log(b.toString());
+b.set(tateti.P1, tateti.C, testID1);
+//console.log(b.toString());
+b.set(tateti.P2, tateti.E, testID2);
+//console.log(b.toString());
+b.set(tateti.P1, tateti.G, testID1);
+//console.log(b.toString());
+b.set(tateti.P2, tateti.I, testID2);
+//console.log(b.toString());
+b.move(tateti.G, tateti.D, testID1);
+//console.log(b.toString());
 b.history.undo();
-console.log(b.toString());
-b.move(tateti.C, tateti.F);
-console.log(b.toString());
-b.move(tateti.I, tateti.H);
-console.log(b.toString());
+//console.log(b.toString());
+b.move(tateti.C, tateti.F, testID1);
+//console.log(b.toString());
+b.move(tateti.I, tateti.H, testID2);
+//console.log(b.toString());
 
 
