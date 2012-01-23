@@ -28,7 +28,7 @@ var tateti = (function() {
     var I = "I";
 
     /* list of all nodes */
-    var nodes = [A,B,C,D,E,F,G,H,I];
+    var nodes = [A, B, C, D, E, F, G, H, I];
 
     /* node state symbols */
     var EMPTY = ".";
@@ -51,32 +51,32 @@ var tateti = (function() {
 
     /* board graph */
     var graph = {
-        A: [B,D,E],
-        B: [A,C,E],
-        C: [B,E,F],
-        D: [A,E,G],
-        E: [A,B,C,D,F,G,H,I],
-        F: [C,E,I],
-        G: [D,E,H],
-        H: [E,G,I],
-        I: [E,F,H]
-    }
+        A: [B, D, E],
+        B: [A, C, E],
+        C: [B, E, F],
+        D: [A, E, G],
+        E: [A, B, C, D, F, G, H, I],
+        F: [C, E, I],
+        G: [D, E, H],
+        H: [E, G, I],
+        I: [E, F, H]
+    };
 
     var wins = [
         /* horizontals */
-        [A,B,C],
-        [D,E,F],
-        [G,H,I],
+        [A, B, C],
+        [D, E, F],
+        [G, H, I],
 
         /* verticals */
-        [A,D,G],
-        [B,E,H],
-        [C,F,I],
+        [A, D, G],
+        [B, E, H],
+        [C, F, I],
 
         /* diagonals */
-        [A,E,I],
-        [C,E,G]
-    ]
+        [A, E, I],
+        [C, E, G]
+    ];
 
     /* [XXX: placeholder for i18n] */
     function _(s) {
@@ -85,7 +85,7 @@ var tateti = (function() {
     /* return the piece which has the next/prev turn
        to the given piece p */
     function prevMove(p) {
-        if (p == P1) {
+        if (p === P1) {
             return P2;
         }
         return P1;
@@ -100,7 +100,7 @@ var tateti = (function() {
     }
     BoardAction.prototype.toString = function() {
         var s = "BoardAction(" + this.type + "): " + this.p + ", " + this.node1;
-        if (this.type == BOARD_ACTION_TYPE_MOVE) {
+        if (this.type === BOARD_ACTION_TYPE_MOVE) {
             s += "->" + this.node2;
         }
         return s;
@@ -182,7 +182,7 @@ var tateti = (function() {
         }
 
         if (this.lastTurn != null) {
-            if (this.lastTurn == p) {
+            if (this.lastTurn === p) {
                 throw new BoardException(_("Wrong turn"), 40);
             }
         }
@@ -248,13 +248,13 @@ var tateti = (function() {
 
     /* check if the given board node is an empty cell */
     Board.prototype.isEmpty = function(node) {
-        return (this.get(node) == EMPTY);
+        return (this.get(node) === EMPTY);
     }
     /* check if the move from board node1 to node2 is legal */
     Board.prototype.isLegalMove = function(node1, node2) {
         if (this.isEmpty(node2)) {
             for (var legal in graph[node1]) {
-                if (node2 == graph[node1][legal]) {
+                if (node2 === graph[node1][legal]) {
                     return true;
                 }
             }
@@ -267,7 +267,7 @@ var tateti = (function() {
     Board.prototype.countPositions = function(p) {
         var count = 0;
         for (var node in this.rep) {
-            if (this.get(node) == p) {
+            if (this.get(node) === p) {
                 ++count;
             }
         }
@@ -279,7 +279,7 @@ var tateti = (function() {
     Board.prototype.getPositions = function(p) {
         var positions = [];
         for (var node in this.rep) {
-            if (rep[node] == p) {
+            if (rep[node] === p) {
                 positions.push(node);
             }
         }
@@ -295,7 +295,7 @@ var tateti = (function() {
             var p2 = this.get(wins[i][1]);
             var p3 = this.get(wins[i][2]);
 
-            if (p1 != EMPTY && p1 == p2 && p2 == p3) {
+            if (p1 != EMPTY && p1 === p2 && p2 === p3) {
                 this.gameOver = true;
                 return wins[i];
             }
@@ -325,7 +325,7 @@ var tateti = (function() {
             }
             c++;
         }
-        s += " --------------\n";
+        s += " --------------";
         return s;
     }
 
@@ -355,7 +355,7 @@ var tateti = (function() {
                 --this.ptr;
             }
 
-            if (item.type == BOARD_ACTION_TYPE_MOVE) {
+            if (item.type === BOARD_ACTION_TYPE_MOVE) {
                 this.board.unmove(item);
             }
             else {
@@ -370,7 +370,7 @@ var tateti = (function() {
     History.prototype.redo = function() {
         if (this.canRedo()) {
             var action = this.rep[this.ptr+1];
-            if (action.type == BOARD_ACTION_TYPE_MOVE) {
+            if (action.type === BOARD_ACTION_TYPE_MOVE) {
                 this.board.move(action.node1, action.node2, NO_HISTORY);
             }
             else {
@@ -454,49 +454,4 @@ var tateti = (function() {
         History: History,
     }
 })();
-var foo = new Object();
-foo.onevent = function(e) {
-    console.log("EVENT RECV: " + e);
-    console.log('-------H-------');
-    console.log(e.target.history.toString());
-    console.log('-------H-------');
-}
-var b = new tateti.Board();
-b.addEventListener(tateti.EVENT_TYPE_START, foo.onevent);
-b.addEventListener(tateti.EVENT_TYPE_STOP, foo.onevent);
-b.addEventListener(tateti.EVENT_TYPE_RESET, foo.onevent);
-b.addEventListener(tateti.EVENT_TYPE_MOVE, foo.onevent);
-b.addEventListener(tateti.EVENT_TYPE_SET, foo.onevent);
-b.addEventListener(tateti.EVENT_TYPE_WIN, foo.onevent);
-
-console.log(b.toString());
-b.set(tateti.P1, tateti.A);
-console.log(b.toString() + "\n");
-console.log("UNDO");
-b.history.undo();
-console.log(b.toString() + "\n");
-b.set(tateti.P1, tateti.A);
-console.log(b.toString() + "\n");
-b.set(tateti.P2, tateti.B);
-console.log(b.toString() + "\n");
-b.set(tateti.P1, tateti.C);
-console.log(b.toString() + "\n");
-b.set(tateti.P2, tateti.E);
-console.log(b.toString() + "\n");
-b.set(tateti.P1, tateti.G);
-console.log(b.toString() + "\n");
-b.set(tateti.P2, tateti.I);
-console.log(b.toString() + "\n");
-b.move(tateti.G, tateti.D);
-console.log(b.toString() + "\n");
-console.log("UNDO");
-b.history.undo();
-console.log(b.toString() + "\n");
-console.log("REDO");
-b.history.redo();
-console.log(b.toString() + "\n");
-b.move(tateti.C, tateti.F);
-console.log(b.toString() + "\n");
-b.move(tateti.I, tateti.H);
-console.log(b.toString() + "\n");
 

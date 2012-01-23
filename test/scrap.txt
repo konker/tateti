@@ -1,0 +1,217 @@
+tateti.js:472 --------------
+| .  | .  | .  |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+tateti.js:459EVENT RECV: BoardEvent: START
+tateti.js:460-------H-------
+tateti.js:461ptr: -1
+tateti.js:462-------H-------
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P1, A
+tateti.js:460-------H-------
+tateti.js:461ptr: 0
+BoardAction(SET): P1, A | 
+tateti.js:462-------H-------
+tateti.js:474 --------------
+| P1 | .  | .  |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:475UNDO
+tateti.js:477 --------------
+| .  | .  | .  |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: START
+tateti.js:460-------H-------
+tateti.js:461ptr: 0
+BoardAction(SET): P1, A | 
+tateti.js:462-------H-------
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P1, A
+tateti.js:460-------H-------
+tateti.js:461ptr: 1
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | 
+tateti.js:462-------H-------
+tateti.js:479 --------------
+| P1 | .  | .  |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P2, B
+tateti.js:460-------H-------
+tateti.js:461ptr: 2
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | 
+tateti.js:462-------H-------
+tateti.js:481 --------------
+| P1 | P2 | .  |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P1, C
+tateti.js:460-------H-------
+tateti.js:461ptr: 3
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | 
+tateti.js:462-------H-------
+tateti.js:483 --------------
+| P1 | P2 | P1 |
+| .  | .  | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P2, E
+tateti.js:460-------H-------
+tateti.js:461ptr: 4
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | 
+tateti.js:462-------H-------
+tateti.js:485 --------------
+| P1 | P2 | P1 |
+| .  | P2 | .  |
+| .  | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P1, G
+tateti.js:460-------H-------
+tateti.js:461ptr: 5
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | 
+tateti.js:462-------H-------
+tateti.js:487 --------------
+| P1 | P2 | P1 |
+| .  | P2 | .  |
+| P1 | .  | .  |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: SET, BoardAction(SET): P2, I
+tateti.js:460-------H-------
+tateti.js:461ptr: 6
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | 
+tateti.js:462-------H-------
+tateti.js:489 --------------
+| P1 | P2 | P1 |
+| .  | P2 | .  |
+| P1 | .  | P2 |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: MOVE, BoardAction(MOVE): P1, G->D
+tateti.js:460-------H-------
+tateti.js:461ptr: 7
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | 
+tateti.js:462-------H-------
+tateti.js:491 --------------
+| P1 | P2 | P1 |
+| P1 | P2 | .  |
+| .  | .  | P2 |
+ --------------
+
+tateti.js:492UNDO
+tateti.js:459EVENT RECV: BoardEvent: MOVE, BoardAction(MOVE): P1, D->G
+tateti.js:460-------H-------
+tateti.js:461ptr: 6
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | 
+tateti.js:462-------H-------
+tateti.js:494 --------------
+| P1 | P2 | P1 |
+| .  | P2 | .  |
+| P1 | .  | P2 |
+ --------------
+
+tateti.js:495REDO
+tateti.js:459EVENT RECV: BoardEvent: MOVE, BoardAction(MOVE): P1, G->D
+tateti.js:460-------H-------
+tateti.js:461ptr: 6
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | 
+tateti.js:462-------H-------
+tateti.js:497 --------------
+| P1 | P2 | P1 |
+| P1 | P2 | .  |
+| .  | .  | P2 |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: MOVE, BoardAction(MOVE): P1, C->F
+tateti.js:460-------H-------
+tateti.js:461ptr: 8
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | BoardAction(MOVE): P1, C->F | 
+tateti.js:462-------H-------
+tateti.js:499 --------------
+| P1 | P2 | .  |
+| P1 | P2 | P1 |
+| .  | .  | P2 |
+ --------------
+
+tateti.js:459EVENT RECV: BoardEvent: MOVE, BoardAction(MOVE): P2, I->H
+tateti.js:460-------H-------
+tateti.js:461ptr: 9
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | BoardAction(MOVE): P1, C->F | BoardAction(MOVE): P2, I->H | 
+tateti.js:462-------H-------
+tateti.js:459EVENT RECV: BoardEvent: WIN, BoardAction(MOVE): P2, I->H, WIN: B,E,H
+tateti.js:460-------H-------
+tateti.js:461ptr: 9
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | BoardAction(MOVE): P1, C->F | BoardAction(MOVE): P2, I->H | 
+tateti.js:462-------H-------
+tateti.js:459EVENT RECV: BoardEvent: STOP
+tateti.js:460-------H-------
+tateti.js:461ptr: 9
+BoardAction(SET): P1, A | BoardAction(SET): P1, A | BoardAction(SET): P2, B | BoardAction(SET): P1, C | BoardAction(SET): P2, E | BoardAction(SET): P1, G | BoardAction(SET): P2, I | BoardAction(MOVE): P1, G->D | BoardAction(MOVE): P1, C->F | BoardAction(MOVE): P2, I->H | 
+tateti.js:462-------H-------
+tateti.js:501 --------------
+| P1 | P2 | .  |
+| P1 | P2 | P1 |
+| .  | P2 | .  |
+ --------------
+
+
+
+==============================================================================
+
+
+
+var foo = new Object();
+foo.onevent = function(e) {
+    console.log("EVENT RECV: " + e);
+    console.log('-------H-------');
+    console.log(e.target.history.toString());
+    console.log('-------H-------');
+}
+var b = new tateti.Board();
+b.addEventListener(tateti.EVENT_TYPE_START, foo.onevent);
+b.addEventListener(tateti.EVENT_TYPE_STOP, foo.onevent);
+b.addEventListener(tateti.EVENT_TYPE_RESET, foo.onevent);
+b.addEventListener(tateti.EVENT_TYPE_MOVE, foo.onevent);
+b.addEventListener(tateti.EVENT_TYPE_SET, foo.onevent);
+b.addEventListener(tateti.EVENT_TYPE_WIN, foo.onevent);
+
+console.log(b.toString());
+b.set(tateti.P1, tateti.A);
+console.log(b.toString() + "\n");
+console.log("UNDO");
+b.history.undo();
+console.log(b.toString() + "\n");
+b.set(tateti.P1, tateti.A);
+console.log(b.toString() + "\n");
+b.set(tateti.P2, tateti.B);
+console.log(b.toString() + "\n");
+b.set(tateti.P1, tateti.C);
+console.log(b.toString() + "\n");
+b.set(tateti.P2, tateti.E);
+console.log(b.toString() + "\n");
+b.set(tateti.P1, tateti.G);
+console.log(b.toString() + "\n");
+b.set(tateti.P2, tateti.I);
+console.log(b.toString() + "\n");
+b.move(tateti.G, tateti.D);
+console.log(b.toString() + "\n");
+console.log("UNDO");
+b.history.undo();
+console.log(b.toString() + "\n");
+console.log("REDO");
+b.history.redo();
+console.log(b.toString() + "\n");
+b.move(tateti.C, tateti.F);
+console.log(b.toString() + "\n");
+b.move(tateti.I, tateti.H);
+console.log(b.toString() + "\n");
+
