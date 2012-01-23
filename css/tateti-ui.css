@@ -39,3 +39,111 @@
             #board .ui-selected {
                 background-position: 0 -53px;
                 }
+
+
+/* menu */
+#menu {
+    position: absolute;
+    bottom: 28px;
+    left: 18px; /*265px;*/
+    width: 32px;
+    height: 32px;
+    background: transparent url(../images/options.png) 0 0 no-repeat;
+    }
+    #menu a {   
+        width: 32px;
+        height: 32px;
+        display: block;
+        text-indent: -9999px;
+        overflow: hidden;
+        }
+
+#menu-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 310px;
+    height: 430px;
+    background: #ddd;
+    -moz-opacity:.65;
+    filter:alpha(opacity=65);
+    opacity:.65;
+    }
+#menu-dialog {
+    display: none;
+    position: absolute;
+    bottom: 42px;
+    left: 0px;
+    width: 304px;
+    height: 170px;
+    background: #fff;
+    -moz-border-radius-topright: 9px;
+    border-top-right-radius: 9px;
+    -moz-border-radius-topleft: 9px;
+    border-top-left-radius: 9px;
+    border: 2px solid #aaa;
+    border-bottom-width: 0;
+    }
+    #menu-dialog ul {
+        list-style: none;
+        margin: 0 0 0 26px;
+        padding:0;
+        }
+        #menu-dialog ul li {
+            float: left;
+            width: 64px;
+            height: 64px;
+            margin-top: 15px;
+            margin-left: 18px;
+            }
+            #menu-dialog ul li a {
+                display: block;
+                width: 64px;
+                height: 64px;
+                padding-top: 4.25em;
+                text-align: center;
+                color: #000;
+                text-decoration: none;
+                overflow: hidden;
+                }
+                #menu-dialog ul li a:hover { text-decoration: underline; }
+                #menu-dialog ul li.close a { background: transparent url(../images/close-icon.png) 0 0 no-repeat; }
+                #menu-dialog ul li.undo a { background: transparent url(../images/undo-icon.png) 0 0 no-repeat; }
+                #menu-dialog ul li.redo a { background: transparent url(../images/redo-icon.png) 0 0 no-repeat; }
+                #menu-dialog ul li.reset a { background: transparent url(../images/reset-icon.png) 0 0 no-repeat; }
+                #menu-dialog ul li.mute { clear: both; }
+                    #menu-dialog ul li.muted a { background: transparent url(../images/muted-icon.png) 0 0 no-repeat; }
+                    #menu-dialog ul li.unmuted a { background: transparent url(../images/unmuted-icon.png) 0 0 no-repeat; }
+                #menu-dialog ul li.help a { background: transparent url(../images/help-icon.png) 0 0 no-repeat; }
+
+
+/* messages */
+#message {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    z-index: 20;
+    font-family: verdana, sans-serif;
+    font-size: 85%;
+    background: #009;
+    color: #fff;
+    padding: 18px 24px;
+    border: 1px solid #444;
+    margin-bottom: 12px;
+    padding-right: 56px;
+    width: 212px;
+    text-align: center;
+    }
+    #message .ex {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 4px 6px;
+        border: 1px solid #fff;
+        margin: 6px;
+        cursor: pointer;
+        }
+
+

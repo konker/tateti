@@ -267,7 +267,7 @@ tateti.ui = {
         },
         show: function(s) {
             $('#message .content').html(s);
-            $('#message').hide();
+            $('#message').show();
         },
         hide: function() {
             $('#message').hide();
@@ -282,7 +282,71 @@ tateti.ui = {
         _white: function() {
             $('#wrapper').css('background', '#fff');
        }
-    }
+    },
+    menu: {
+        init: function() {
+            $('#menu').bind('click', tateti.ui.menu.open);
+
+            $('#menu-dialog .close a').bind('click', tateti.ui.menu.close);
+            $('#menu-dialog .undo a').bind('click', tateti.ui.menu.undo);
+            $('#menu-dialog .redo a').bind('click', tateti.ui.menu.redo);
+            $('#menu-dialog .reset a').bind('click', tateti.ui.menu.reset);
+            $('#menu-dialog .mute a').bind('click', tateti.ui.menu.mute);
+            $('#menu-dialog .help a').bind('click', tateti.ui.menu.help);
+        },
+        open: function() {
+            $('#menu-overlay')
+                .css('width', $('#wrapper').width())
+                .show();
+            $('#menu-dialog')
+                .css('width', $('#wrapper').width() - 4)
+                .fadeIn('normal');
+            return false;
+        },
+        close: function() {
+            $("#menu-overlay").hide();
+            $('#menu-dialog').hide();
+            return false;
+        },
+        
+        undo: function() {
+            tateti.ui.board.undo();
+            return false;
+        },
+        redo: function() {
+            tateti.ui.board.redo();
+            return false;
+        },
+        reset: function() {
+            if (tateti.ui.board.gameOver || confirm('Are you sure you want to restart the game?')) {
+                tateti.ui.board.reset();
+                tateti.ui.menu.close();
+            }
+            return false;
+        },
+        mute: function() {
+            if (tateti.ui.audio.toggleMute()) {
+                $('#menu-dialog .mute')
+                    .removeClass('muted')
+                    .addClass('unmuted')
+                    .find('a')
+                    .html('mute');
+            }
+            else {
+                $('#menu-dialog .mute')
+                    .removeClass('unmuted')
+                    .addClass('muted')
+                    .find('a')
+                    .html('unmute');
+            }
+            return false;
+        },
+        help: function() {
+            alert(_("Object: get 3 in a row; any horizontal, diagonal or vertical 3 is good. Once pieces are on the board, move them one space along the black lines."));
+            return false;
+        }
+    },
+
 }
 $(tateti.ui.init);
 

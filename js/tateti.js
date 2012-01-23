@@ -267,7 +267,7 @@ var tateti = (function() {
         }
 
         if (this.isEmpty(node1)) {
-            throw new BoardException(_("Illegal move: ") + node1 + "->" + node2, 20);
+            throw new BoardException(_("Illegal move"), 20);
         }
 
         var p = this.get(node1);
@@ -278,7 +278,7 @@ var tateti = (function() {
         }
 
         if (this.countPositions(getPlayer(p)) < 3) {
-            throw new BoardException(_("Please place all pieces on the board before moving them" + p), 30);
+            throw new BoardException(_("Please place all pieces on the board before moving them"), 30);
         }
          
         if (!this.isLegalMove(node1, node2)) {
