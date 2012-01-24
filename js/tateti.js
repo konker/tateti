@@ -56,11 +56,13 @@ var tateti = (function() {
     var EVENT_TYPE_START = 'START';
     var EVENT_TYPE_STOP  = 'STOP';
     var EVENT_TYPE_SET   = 'SET';
+    var EVENT_TYPE_UNSET = 'UNSET';
     var EVENT_TYPE_MOVE  = 'MOVE';
     var EVENT_TYPE_WIN   = 'WIN';
     var EVENT_TYPE_RESET = 'RESET';
 
     var NO_HISTORY = 1;
+    var NO_CHECK_TURN = 1;
 
     /* board graph */
     var graph = {
@@ -164,10 +166,14 @@ var tateti = (function() {
     }
 
     /* set the state of the cell at the given board node to be EMPTY */
-    Board.prototype.unset = function(move) {
-        var p = this.get(move.node1);
-        this._unset(move.node1);
+    Board.prototype.unset = function(action) {
+        var p = this.get(action.node1);
+        this._unset(action.node1);
         this.lastTurn = prevMove(getPlayer(p));
+
+        var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
+        console.log(e);
+        this.dispatchEvent(e);
     }
 
     /* set the state of the cell at the given board node to be player p */
@@ -176,7 +182,7 @@ var tateti = (function() {
 
         if (this.countPositions(P1) == 0 && this.countPositions(P2) == 0) {
             // nothing on board => game is starting
-            var e = new BoardEvent(EVENT_TYPE_START, this, null, null);
+            var e = new BoardEvent(EVENT_TYPE_START, this);
             this.dispatchEvent(e);
         }
 
@@ -196,7 +202,7 @@ var tateti = (function() {
             e = new BoardEvent(EVENT_TYPE_WIN, this, action, win);
             this.dispatchEvent(e);
 
-            e = new BoardEvent(EVENT_TYPE_STOP, this, null, null);
+            e = new BoardEvent(EVENT_TYPE_STOP, this);
             this.dispatchEvent(e);
         }
         return;
@@ -229,12 +235,13 @@ var tateti = (function() {
 
     /* reverse a move */
     Board.prototype.unmove = function(move) {
-        this.move(move.node2, move.node1, NO_HISTORY);
+        this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN);
+        this.lastTurn = prevMove(getPlayer(move.p));
     }
 
     /* move a piece from node1 to node2 */
-    Board.prototype.move = function(node1, node2, _no_history) {
-        this.checkLegalMove(node1, node2);
+    Board.prototype.move = function(node1, node2, _no_history, _no_check_turn) {
+        this.checkLegalMove(node1, node2, _no_check_turn);
 
         var p = this.get(node1);
         this._unset(node1);
@@ -261,7 +268,7 @@ var tateti = (function() {
     }
 
     /* make various checks and throw a BoardException on error */
-    Board.prototype.checkLegalMove = function(node1, node2) {
+    Board.prototype.checkLegalMove = function(node1, node2, _no_check_turn) {
         if (this.gameOver) {
             throw new BoardException(_("Game over"), 50);
         }
@@ -271,7 +278,7 @@ var tateti = (function() {
         }
 
         var p = this.get(node1);
-        if (this.lastTurn != null) {
+        if (this.lastTurn != null && !_no_check_turn) {
             if (this.lastTurn === getPlayer(p)) {
                 throw new BoardException(_("Wrong turn"), 40);
             }
@@ -437,22 +444,23 @@ var tateti = (function() {
     /* move one step back in history if possible */
     History.prototype.undo = function() {
         if (this.canUndo()) {
-            var item = this.rep[this.ptr];
-            if (this.ptr == 0) {
+            var action = this.rep[this.ptr];
+            console.log(action);
+            if (this.ptr == -1) {
                 this.board.lastTurn = null;
             }
             else {
                 --this.ptr;
             }
 
-            if (item.type === BOARD_ACTION_TYPE_MOVE) {
-                this.board.unmove(item);
+            if (action.type === BOARD_ACTION_TYPE_MOVE) {
+                this.board.unmove(action);
             }
             else {
-                this.board.unset(item);
+                this.board.unset(action);
             }
             this.board.gameOver = false;
-            return item;
+            return action;
         }
         return null;
     }
@@ -460,6 +468,7 @@ var tateti = (function() {
     History.prototype.redo = function() {
         if (this.canRedo()) {
             var action = this.rep[this.ptr+1];
+            console.log(action);
             if (action.type === BOARD_ACTION_TYPE_MOVE) {
                 this.board.move(action.node1, action.node2, NO_HISTORY);
             }
@@ -544,6 +553,7 @@ var tateti = (function() {
         EVENT_TYPE_START: EVENT_TYPE_START,
         EVENT_TYPE_STOP:  EVENT_TYPE_STOP,
         EVENT_TYPE_SET:   EVENT_TYPE_SET,
+        EVENT_TYPE_UNSET: EVENT_TYPE_UNSET,
         EVENT_TYPE_MOVE:  EVENT_TYPE_MOVE,
         EVENT_TYPE_WIN:   EVENT_TYPE_WIN,
         EVENT_TYPE_RESET: EVENT_TYPE_RESET,

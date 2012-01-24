@@ -33,7 +33,7 @@ tateti.ui = {
         tateti.ui.events.init();
 
         // initialize the menu
-        ///tateti.ui.menu.init();
+        tateti.ui.menu.init();
 
         tateti.ui._inited = true;
     },
@@ -195,7 +195,9 @@ tateti.ui = {
             }
         },
         deselect: function(p) {
-            tateti.ui.piece.selected.removeClass('ui-selected');
+            if (tateti.ui.piece.selected) {
+                tateti.ui.piece.selected.removeClass('ui-selected');
+            }
             tateti.ui.piece.selected = null;
             tateti.ui.piece.selectedId = null
         },
@@ -232,6 +234,7 @@ tateti.ui = {
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_RESET, tateti.ui.events.onreset);
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_MOVE, tateti.ui.events.onaction);
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_SET, tateti.ui.events.onaction);
+            tateti.ui.board.addEventListener(tateti.EVENT_TYPE_UNSET, tateti.ui.events.onaction);
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_WIN, tateti.ui.events.onwin);
         },
         onstart: function(e) {
@@ -310,11 +313,19 @@ tateti.ui = {
         },
         
         undo: function() {
-            tateti.ui.board.undo();
+            console.log("UNDO");
+            tateti.ui.board.history.undo();
+            console.log(tateti.ui.board.toString());
+            console.log(tateti.ui.board.lastTurn);
+            console.log(tateti.ui.board.history.toString());
             return false;
         },
         redo: function() {
-            tateti.ui.board.redo();
+            console.log("REDO");
+            tateti.ui.board.history.redo();
+            console.log(tateti.ui.board.toString());
+            console.log(tateti.ui.board.lastTurn);
+            console.log(tateti.ui.board.history.toString());
             return false;
         },
         reset: function() {
