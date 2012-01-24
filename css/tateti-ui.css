@@ -71,7 +71,7 @@
     opacity:.65;
     }
 #menu-dialog {
-    kdisplay: none;
+    display: none;
     position: absolute;
     bottom: 42px;
     left: 0px;
