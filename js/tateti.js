@@ -172,7 +172,6 @@ var tateti = (function() {
         this.lastTurn = prevMove(getPlayer(p));
 
         var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
-        console.log(e);
         this.dispatchEvent(e);
     }
 
@@ -445,7 +444,6 @@ var tateti = (function() {
     History.prototype.undo = function() {
         if (this.canUndo()) {
             var action = this.rep[this.ptr];
-            console.log(action);
             if (this.ptr == -1) {
                 this.board.lastTurn = null;
             }
@@ -459,7 +457,10 @@ var tateti = (function() {
             else {
                 this.board.unset(action);
             }
+
             this.board.gameOver = false;
+            var e = new BoardEvent(EVENT_TYPE_START, this);
+            this.board.dispatchEvent(e);
             return action;
         }
         return null;
@@ -468,7 +469,6 @@ var tateti = (function() {
     History.prototype.redo = function() {
         if (this.canRedo()) {
             var action = this.rep[this.ptr+1];
-            console.log(action);
             if (action.type === BOARD_ACTION_TYPE_MOVE) {
                 this.board.move(action.node1, action.node2, NO_HISTORY);
             }

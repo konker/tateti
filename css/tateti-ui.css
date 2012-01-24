@@ -73,6 +73,8 @@
 #menu-dialog {
     display: none;
     position: absolute;
+    font-family: verdana, sans-serif;
+    font-size: 85%;
     bottom: 42px;
     left: 0px;
     width: 304px;

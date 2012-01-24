@@ -238,10 +238,9 @@ tateti.ui = {
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_WIN, tateti.ui.events.onwin);
         },
         onstart: function(e) {
-            console.log("onstart: " + e);
+            tateti.ui._stopped = false;
         },
         onstop: function(e) {
-            console.log("onstop: " + e);
             tateti.ui._stopped = true;
             // [TODO: add class to all pieces/cells to remove finger cursor ?]
         },
@@ -249,14 +248,12 @@ tateti.ui = {
             console.log("onreset: " + e);
         },
         onaction: function(e) {
-            console.log("onaction: " + e);
             tateti.ui.draw();
             tateti.ui.piece.deselect();
             tateti.ui.audio.play('blip');
         },
         onwin: function(e) {
             var w = e.win.winner;
-            console.log("onwin: " + w);
             if (w) {
                 tateti.ui.audio.play('win');
                 $('.' + w).effect('pulsate', { times: 5 }, 'slow');
@@ -313,19 +310,11 @@ tateti.ui = {
         },
         
         undo: function() {
-            console.log("UNDO");
             tateti.ui.board.history.undo();
-            console.log(tateti.ui.board.toString());
-            console.log(tateti.ui.board.lastTurn);
-            console.log(tateti.ui.board.history.toString());
             return false;
         },
         redo: function() {
-            console.log("REDO");
             tateti.ui.board.history.redo();
-            console.log(tateti.ui.board.toString());
-            console.log(tateti.ui.board.lastTurn);
-            console.log(tateti.ui.board.history.toString());
             return false;
         },
         reset: function() {
