@@ -137,17 +137,29 @@ var tateti = (function() {
     function Board() {
         /* struct representing the board */
         this.rep = {};
-        for (var node in nodes) {
-            this.rep[nodes[node]] = EMPTY;
-        }
 
-        this.lastTurn = null;
-        this.gameOver = false; 
-
-        /* track history */
-        this.history = new History(this);
+        /* initialize state to new game */
+        this._reset();
     }
     Board.mixin(morningwood.Evented);
+
+    /* facade for history undo */
+    Board.prototype.undo = function() {
+        return this.history.undo();
+    }
+
+    /* facade for history redo */
+    Board.prototype.redo = function() {
+        return this.history.redo();
+    }
+
+    /* reset the current game state */
+    Board.prototype.reset = function() {
+        this._reset();
+
+        var e = new BoardEvent(EVENT_TYPE_RESET, this);
+        this.dispatchEvent(e);
+    }
 
     /* get the state of the cell at the given board node symbol */
     Board.prototype.get = function(node) {
@@ -316,6 +328,22 @@ var tateti = (function() {
     /* low level set operation */
     Board.prototype._set = function(p, node1) {
         this.rep[node1] = p;
+    }
+    /* low level clear operation */
+    Board.prototype._clear = function() {
+        for (var node in nodes) {
+            this.rep[nodes[node]] = EMPTY;
+        }
+    }
+    /* low level reset operation */
+    Board.prototype._reset = function() {
+        this._clear();
+
+        this.lastTurn = null;
+        this.gameOver = false; 
+
+        /* track history */
+        this.history = new History(this);
     }
 
     /* get the cell for a given piece. null if not on the board */
