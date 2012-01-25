@@ -62,6 +62,9 @@ tateti.ui = {
         // initialize event listeners
         tateti.ui.events.init();
 
+        // initialize message system
+        tateti.ui.message.init();
+
         tateti.ui._inited = true;
     },
     draw: function() {
@@ -298,8 +301,10 @@ tateti.ui = {
         }
     },
     message: {
+        _orig_color: null,
+
         init: function() {
-            $('#message').css({opacity: .65}).show();
+            tateti.ui.message._orig_color = $('body').css('background');
             $('#message').bind('click', tateti.ui.message.hide);
         },
         show: function(s) {
@@ -313,11 +318,11 @@ tateti.ui = {
             setTimeout(tateti.ui.message._red, 200);
         },
         _red: function() {
-            $('#wrapper').css('background', '#a00');
-            setTimeout(tateti.ui.message._white, 750);
+            $('body').css('background', '#a00');
+            setTimeout(tateti.ui.message._orig, 750);
        },
-        _white: function() {
-            $('#wrapper').css('background', '#fff');
+        _orig: function() {
+            $('body').css('background', tateti.ui.message._orig_color);
        }
     }
 }
