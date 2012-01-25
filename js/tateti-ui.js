@@ -295,9 +295,11 @@ tateti.ui = {
             $('#menu-dialog .help a').bind('click', tateti.ui.menu.help);
         },
         open: function() {
+            /*
             $('#menu-overlay')
                 .css('width', $('#wrapper').width())
                 .show();
+                */
             $('#menu-dialog')
                 .css('width', $('#wrapper').width() - 4)
                 .fadeIn('normal');

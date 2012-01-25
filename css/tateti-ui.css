@@ -1,3 +1,10 @@
+body {
+    margin: 0;
+    padding: 0;
+    }
+#wrapper {
+    padding: 6px;
+    }
 #board {
     position: relative;
     padding-top: 100px;
