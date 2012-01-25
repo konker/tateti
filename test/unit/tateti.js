@@ -1,8 +1,8 @@
 $(document).ready(function() {
     module("Module tateti.js");
 
-    test("Board OK", function() {
-        //expect(10);
+    test("Normal game", function() {
+        expect(10);
 
         var b = new tateti.Board();
         equals(b.toString(),
@@ -82,26 +82,10 @@ $(document).ready(function() {
     });
 
     test("Undo", function() {
-        //expect(10);
+        expect(2);
 
         var b = new tateti.Board();
-        equals(b.toString(),
-               "-----------------\n"  +
-               "|  .  |  .  |  .  |\n" +
-               "|  .  |  .  |  .  |\n" +
-               "|  .  |  .  |  .  |\n" +
-               " -----------------",
-        "Empty board");
-
         b.set(tateti.P11, tateti.A);
-        equals(b.toString(),
-               "-----------------\n"  +
-               "| P11 |  .  |  .  |\n" +
-               "|  .  |  .  |  .  |\n" +
-               "|  .  |  .  |  .  |\n" +
-               " -----------------",
-        "Move 1");
-
         b.set(tateti.P21, tateti.B);
         equals(b.toString(),
                "-----------------\n"  +
@@ -121,7 +105,87 @@ $(document).ready(function() {
         "Undo");
     });
 
-    test("Wrong turn", function() {
+    test("Redo", function() {
+        expect(3);
+
+        var b = new tateti.Board();
+        b.set(tateti.P11, tateti.A);
+        b.set(tateti.P21, tateti.B);
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 | P21 |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Move 2");
+
+        b.undo();
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Undo");
+
+        b.redo();
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 | P21 |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Redo");
+    });
+
+    test("Reset", function() {
+        expect(4);
+
+        var b = new tateti.Board();
+        b.set(tateti.P11, tateti.A);
+        b.set(tateti.P21, tateti.B);
+        b.set(tateti.P12, tateti.D);
+        b.set(tateti.P22, tateti.E);
+        b.set(tateti.P13, tateti.H);
+        b.set(tateti.P23, tateti.I);
+        b.move(tateti.H, tateti.G);
+        equal(b.gameOver, true, "Game over");
+
+        b.reset();
+        equals(b.toString(),
+               "-----------------\n"  +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Empty board");
+
+        notEqual(b.gameOver, true, "Not game over");
+        equal(b.history.len(), 0, "History is empty");
+    });
+
+    test("Move after game over", function() {
+        expect(2);
+
+        var b = new tateti.Board();
+        b.set(tateti.P11, tateti.A);
+        b.set(tateti.P21, tateti.B);
+        b.set(tateti.P12, tateti.D);
+        b.set(tateti.P22, tateti.E);
+        b.set(tateti.P13, tateti.H);
+        b.set(tateti.P23, tateti.I);
+        b.move(tateti.H, tateti.G);
+        ok(b.gameOver, "Game over");
+
+        raises(function() {
+                b.move(tateti.I, tateti.H);
+            },
+            "Move after game over"
+        );
+
+    });
+
+    test("Wrong turn (set)", function() {
         expect(1);
 
         var b = new tateti.Board();
@@ -144,6 +208,23 @@ $(document).ready(function() {
                 b.set(tateti.P21, tateti.A);
             },
             "Illegal set detected"
+        );
+    });
+
+    test("All pieces already on board", function() {
+        expect(1);
+
+        var b = new tateti.Board();
+        b.set(tateti.P11, tateti.A);
+        b.set(tateti.P21, tateti.B);
+        b.set(tateti.P12, tateti.D);
+        b.set(tateti.P22, tateti.E);
+        b.set(tateti.P13, tateti.H);
+        b.set(tateti.P23, tateti.I);
+        raises(function() {
+                b.set(tateti.P11, tateti.A);
+            },
+            "All pieces already on board"
         );
     });
 

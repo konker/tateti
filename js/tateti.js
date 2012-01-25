@@ -516,6 +516,9 @@ var tateti = (function() {
     History.prototype.canRedo = function() {
         return (this.rep.length > (this.ptr + 1));
     }
+    History.prototype.len = function() {
+        return this.rep.length;
+    }
     History.prototype.toString = function() {
         var s = "ptr: " + this.ptr + "\n";
         for (var move in this.rep) {
