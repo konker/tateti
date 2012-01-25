@@ -81,6 +81,46 @@ $(document).ready(function() {
         deepEqual(b.checkWinner(), { "win": [tateti.A, tateti.D, tateti.G], "winner": "P1" }, "P1 Winner");
     });
 
+    test("Undo", function() {
+        //expect(10);
+
+        var b = new tateti.Board();
+        equals(b.toString(),
+               "-----------------\n"  +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Empty board");
+
+        b.set(tateti.P11, tateti.A);
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Move 1");
+
+        b.set(tateti.P21, tateti.B);
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 | P21 |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Move 2");
+
+        b.undo();
+        equals(b.toString(),
+               "-----------------\n"  +
+               "| P11 |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               "|  .  |  .  |  .  |\n" +
+               " -----------------",
+        "Undo");
+    });
+
     test("Wrong turn", function() {
         expect(1);
 
