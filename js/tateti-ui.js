@@ -11,14 +11,44 @@
 if (typeof(tateti) == 'undefined') {
     throw "tateti object dependency not found";
 }
+
+/* class to abstract basic audio playback funcitonality */
+tateti.Audio = function(url) {
+    if (typeof PhoneGap !== "undefined") {
+        this._is_phonegap = true;
+    }
+    if (this._is_phonegap) {
+        this.rep = new Media('/android_asset/www/' + url);
+    }
+    else {
+        this.rep = new Audio(url);
+    }
+}
+tateti.Audio.prototype.play = function() {
+    this.rep.play();
+}
+tateti.Audio.prototype.pause = function() {
+    this.rep.pause();
+    if (this._is_phonegap) {
+        this.rep.release();
+    }
+}
+
+
 tateti.ui = {
     _inited: false,
     _stopped: false,
+    _is_phonegap: false,
+
     board: null,
 
     init: function() {
+        if (typeof PhoneGap !== "undefined") {
+            tateti.ui._is_phonegap = true;
+        }
+
         // preload audio
-        tateti.ui.audio.preload();
+        tateti.ui.audio.init();
         
         // create the logical board
         tateti.ui.board = new tateti.Board();
@@ -68,13 +98,22 @@ tateti.ui = {
             win:   'mp3/win.mp3',
         },
 
-        preload: function() {
+        init: function() {
             tateti.ui.audio._enabled = !!(document.createElement('audio').canPlayType);
+            if (tateti.ui._is_phonegap) {
+                tateti.ui.audio._enabled = true;
+            }
+            /*
+            //[FIXME: why is this?]
             if (navigator.userAgent.toLowerCase().indexOf("iphone") != -1 ||
                 navigator.userAgent.toLowerCase().indexOf("ipad") != -1) {
                 tateti.ui.audio._enabled = false;
             }
-            
+            */
+
+            //[FIXME: what about preload?]
+        },
+        preload: function() {
             if (tateti.ui.audio._enabled) {
                 for (var n in tateti.ui.audio.res) {
                     var a = new Audio(tateti.ui.audio.res[n]);
@@ -86,7 +125,7 @@ tateti.ui = {
                 if (tateti.ui.audio._audio) {
                     tateti.ui.audio._audio.pause();
                 }
-                tateti.ui.audio._audio = new Audio(tateti.ui.audio.res[n]);
+                tateti.ui.audio._audio = new tateti.Audio(tateti.ui.audio.res[n]);
                 tateti.ui.audio._audio.play();
             }
         },
@@ -242,7 +281,8 @@ tateti.ui = {
             // [TODO: add class to all pieces/cells to remove finger cursor ?]
         },
         onreset: function(e) {
-            console.log("onreset: " + e);
+            tateti.ui.draw();
+            tateti.ui.piece.deselect();
         },
         onaction: function(e) {
             tateti.ui.draw();
