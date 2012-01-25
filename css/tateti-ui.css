@@ -3,7 +3,7 @@ body {
     padding: 0;
     }
 #wrapper {
-    padding: 12px;
+    padding: 0 12px;
     }
 #board {
     position: relative;
