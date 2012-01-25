@@ -12,6 +12,11 @@ if (typeof(tateti) == 'undefined') {
     throw "tateti object dependency not found";
 }
 
+/* [XXX: placeholder for i18n] */
+function _(s) {
+    return s;
+}
+
 /* class to abstract basic audio playback funcitonality */
 tateti.Audio = function(url) {
     if (typeof PhoneGap !== "undefined") {
@@ -52,6 +57,7 @@ tateti.ui = {
         
         // create the logical board
         tateti.ui.board = new tateti.Board();
+        tateti.ui.board.drawLimit = 30;
 
         // initialize cells
         tateti.ui.cell.init();
@@ -172,13 +178,16 @@ tateti.ui = {
             var node = $(e.target).attr('id');
 
             if (!tateti.ui._stopped) {
-                try {
-                    tateti.ui.board.action(tateti.ui.piece.selectedId, node);
-                }
-                catch(ex) {
-                    tateti.ui.audio.play('error');
-                    tateti.ui.message.errorFlash()
-                    tateti.ui.piece.deselect();
+                if (tateti.ui.piece.selected) {
+                    try {
+                        tateti.ui.board.action(tateti.ui.piece.selectedId, node);
+                    }
+                    catch(ex) {
+                        tateti.ui.audio.play('error');
+                        tateti.ui.message.errorFlash()
+                        tateti.ui.message.flash(ex.toString());
+                        tateti.ui.piece.deselect();
+                    }
                 }
             }
         },
@@ -275,6 +284,7 @@ tateti.ui = {
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_SET, tateti.ui.events.onaction);
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_UNSET, tateti.ui.events.onaction);
             tateti.ui.board.addEventListener(tateti.EVENT_TYPE_WIN, tateti.ui.events.onwin);
+            tateti.ui.board.addEventListener(tateti.EVENT_TYPE_DRAW, tateti.ui.events.ondraw);
         },
         onstart: function(e) {
             tateti.ui._stopped = false;
@@ -286,6 +296,8 @@ tateti.ui = {
         onreset: function(e) {
             tateti.ui.draw();
             tateti.ui.piece.deselect();
+            tateti.ui.message.hide();
+            // [TODO: remove class to all pieces/cells to add finger cursor ?]
         },
         onaction: function(e) {
             tateti.ui.draw();
@@ -298,6 +310,12 @@ tateti.ui = {
                 tateti.ui.audio.play('win');
                 $('.' + w).effect('pulsate', { times: 5 }, 'slow');
             }
+            tateti.ui.message.show(_("Winner!"));
+        },
+        ondraw: function(e) {
+            tateti.ui.audio.play('win');
+            $('.piece').effect('pulsate', { times: 5 }, 'slow');
+            tateti.ui.message.show(_("Game drawn!"));
         }
     },
     message: {
@@ -310,6 +328,10 @@ tateti.ui = {
         show: function(s) {
             $('#message .content').html(s);
             $('#message').show();
+        },
+        flash: function(s) {
+            tateti.ui.message.show(s);
+            setTimeout(tateti.ui.message.hide, 1500);
         },
         hide: function() {
             $('#message').hide();

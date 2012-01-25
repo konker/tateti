@@ -6,14 +6,7 @@
 */
 
 /* TODO:
-    - Should some current exceptions be converted into events?
-        - Exceptions for system errors rather than game-play errors?
-
-    - Do we need START/STOP events?
-
-    - RESET event not being fired?
-
-    - History/undo/redo
+    - Add DRAW after x number of total moves?
 */
 
 var tateti = (function() {
@@ -59,10 +52,12 @@ var tateti = (function() {
     var EVENT_TYPE_UNSET = 'UNSET';
     var EVENT_TYPE_MOVE  = 'MOVE';
     var EVENT_TYPE_WIN   = 'WIN';
+    var EVENT_TYPE_DRAW  = 'DRAW';
     var EVENT_TYPE_RESET = 'RESET';
 
     var NO_HISTORY = 1;
     var NO_CHECK_TURN = 1;
+    var NO_MOVE_COUNT = 1;
 
     /* board graph */
     var graph = {
@@ -138,6 +133,14 @@ var tateti = (function() {
         /* struct representing the board */
         this.rep = {};
 
+        this.lastTurn  = null;
+        this.gameOver  = false; 
+        this.gameDrawn = false; 
+        this.moveCount = 0;
+        //
+        // number of total moves which constitute a draw
+        this.drawLimit = 30;
+
         /* initialize state to new game */
         this._reset();
     }
@@ -182,6 +185,7 @@ var tateti = (function() {
         var p = this.get(action.node1);
         this._unset(action.node1);
         this.lastTurn = prevMove(getPlayer(p));
+        this.moveCount--;
 
         var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
         this.dispatchEvent(e);
@@ -199,6 +203,7 @@ var tateti = (function() {
 
         this._set(p, node1);
         this.lastTurn = getPlayer(p);
+        this.moveCount++;
 
         var action = new BoardAction(BOARD_ACTION_TYPE_SET, p, node1, null);
         if (!_no_history) {
@@ -211,6 +216,15 @@ var tateti = (function() {
         var win = this.checkWinner();
         if (win) {
             e = new BoardEvent(EVENT_TYPE_WIN, this, action, win);
+            this.dispatchEvent(e);
+
+            e = new BoardEvent(EVENT_TYPE_STOP, this);
+            this.dispatchEvent(e);
+        }
+
+        var draw = this.checkDraw();
+        if (draw) {
+            e = new BoardEvent(EVENT_TYPE_DRAW, this);
             this.dispatchEvent(e);
 
             e = new BoardEvent(EVENT_TYPE_STOP, this);
@@ -246,18 +260,22 @@ var tateti = (function() {
 
     /* reverse a move */
     Board.prototype.unmove = function(move) {
-        this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN);
+        this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN, NO_MOVE_COUNT);
         this.lastTurn = prevMove(getPlayer(move.p));
+        this.moveCount--;
     }
 
     /* move a piece from node1 to node2 */
-    Board.prototype.move = function(node1, node2, _no_history, _no_check_turn) {
+    Board.prototype.move = function(node1, node2, _no_history, _no_check_turn, _no_move_count) {
         this.checkLegalMove(node1, node2, _no_check_turn);
 
         var p = this.get(node1);
         this._unset(node1);
         this._set(p, node2);
         this.lastTurn = getPlayer(p);
+        if (!_no_move_count) {
+            this.moveCount++;
+        }
 
         var action = new BoardAction(BOARD_ACTION_TYPE_MOVE, p, node1, node2);
         if (!_no_history) {
@@ -272,7 +290,16 @@ var tateti = (function() {
             e = new BoardEvent(EVENT_TYPE_WIN, this, action, win);
             this.dispatchEvent(e);
 
-            e = new BoardEvent(EVENT_TYPE_STOP, this, null, null);
+            e = new BoardEvent(EVENT_TYPE_STOP, this);
+            this.dispatchEvent(e);
+        }
+
+        var draw = this.checkDraw();
+        if (draw) {
+            e = new BoardEvent(EVENT_TYPE_DRAW, this);
+            this.dispatchEvent(e);
+
+            e = new BoardEvent(EVENT_TYPE_STOP, this);
             this.dispatchEvent(e);
         }
         return;
@@ -300,7 +327,7 @@ var tateti = (function() {
         }
          
         if (!this.isLegalMove(node1, node2)) {
-            throw new BoardException(_("Illegal move: ") + node1 + "->" + node2, 20);
+            throw new BoardException(_("Illegal move: "), 20);
         }
     }
 
@@ -341,6 +368,8 @@ var tateti = (function() {
 
         this.lastTurn = null;
         this.gameOver = false; 
+        this.gameDrawn = false; 
+        this.moveCount = 0;
 
         /* track history */
         this.history = new History(this);
@@ -422,6 +451,17 @@ var tateti = (function() {
         }
         return ret;
     }
+
+    /* check if the the move count has reached the draw limit */
+    Board.prototype.checkDraw = function() {
+        if (this.moveCount == this.drawLimit) {
+            this.gameOver = true;
+            this.gameDrawn = true;
+            return true;
+        }
+        return false;
+    }
+
     Board.prototype.toString = function() {
         function _pad(p) {
             switch (p) {
@@ -487,6 +527,7 @@ var tateti = (function() {
             }
 
             this.board.gameOver = false;
+            this.board.gameDrawn = false;
             var e = new BoardEvent(EVENT_TYPE_START, this);
             this.board.dispatchEvent(e);
             return action;
@@ -587,6 +628,7 @@ var tateti = (function() {
         EVENT_TYPE_UNSET: EVENT_TYPE_UNSET,
         EVENT_TYPE_MOVE:  EVENT_TYPE_MOVE,
         EVENT_TYPE_WIN:   EVENT_TYPE_WIN,
+        EVENT_TYPE_DRAW:  EVENT_TYPE_DRAW,
         EVENT_TYPE_RESET: EVENT_TYPE_RESET,
 
         Board: Board,
