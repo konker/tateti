@@ -185,7 +185,7 @@ tateti.ui = {
                     catch(ex) {
                         tateti.ui.audio.play('error');
                         tateti.ui.message.errorFlash()
-                        tateti.ui.message.flash(ex.toString());
+                        tateti.ui.message.flash(ex.toString(), tateti.getPlayer(tateti.ui.piece.selectedId));
                         tateti.ui.piece.deselect();
                     }
                 }
@@ -214,13 +214,13 @@ tateti.ui = {
         selectedId: null,
 
         pos: {
-            P11: { top: 40, left: 6 },
-            P12: { top: 40, left: 59 },
-            P13: { top: 40, left: 112 },
+            P11: { top: 404, left: 131 },
+            P12: { top: 404, left: 184 },
+            P13: { top: 404, left: 237 },
 
-            P21: { top: 404, left: 131 },
-            P22: { top: 404, left: 184 },
-            P23: { top: 404, left: 237 },
+            P21: { top: 40, left: 6 },
+            P22: { top: 40, left: 59 },
+            P23: { top: 40, left: 112 }
         },
         init: function() {
             tateti.ui.piece.positionInit();
@@ -310,12 +310,12 @@ tateti.ui = {
                 tateti.ui.audio.play('win');
                 $('.' + w).effect('pulsate', { times: 5 }, 'slow');
             }
-            tateti.ui.message.show(_("Winner!"));
+            tateti.ui.message.show(_("Winner!"), tateti.ui.board.lastTurn);
         },
         ondraw: function(e) {
             tateti.ui.audio.play('win');
             $('.piece').effect('pulsate', { times: 5 }, 'slow');
-            tateti.ui.message.show(_("Game drawn!"));
+            tateti.ui.message.show(_("Game drawn!"), tateti.ui.board.lastTurn);
         }
     },
     message: {
@@ -325,12 +325,13 @@ tateti.ui = {
             tateti.ui.message._orig_color = $('body').css('background');
             $('#message').bind('click', tateti.ui.message.hide);
         },
-        show: function(s) {
+        show: function(s, p) {
+            $('#message').removeClass().addClass(p);
             $('#message .content').html(s);
             $('#message').show();
         },
-        flash: function(s) {
-            tateti.ui.message.show(s);
+        flash: function(s, p) {
+            tateti.ui.message.show(s, p);
             setTimeout(tateti.ui.message.hide, 1500);
         },
         hide: function() {

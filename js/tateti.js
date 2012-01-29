@@ -101,17 +101,6 @@ var tateti = (function() {
         return P1;
     }
 
-    /* return the player to which a given piece belongs */
-    function getPlayer(p) {
-        if (p.indexOf(P1) == 0) {
-            return P1;
-        }
-        else if (p.indexOf(P2) == 0) {
-            return P2;
-        }
-        return EMPTY;
-    }
-
     /* BoardAction class */
     function BoardAction(type, p, node1, node2) {
         this.type = type;
@@ -184,7 +173,7 @@ var tateti = (function() {
     Board.prototype.unset = function(action) {
         var p = this.get(action.node1);
         this._unset(action.node1);
-        this.lastTurn = prevMove(getPlayer(p));
+        this.lastTurn = prevMove(tateti.getPlayer(p));
         this.moveCount--;
 
         var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
@@ -202,7 +191,7 @@ var tateti = (function() {
         }
 
         this._set(p, node1);
-        this.lastTurn = getPlayer(p);
+        this.lastTurn = tateti.getPlayer(p);
         this.moveCount++;
 
         var action = new BoardAction(BOARD_ACTION_TYPE_SET, p, node1, null);
@@ -240,16 +229,16 @@ var tateti = (function() {
         }
 
         if (this.lastTurn != null) {
-            if (this.lastTurn === getPlayer(p)) {
+            if (this.lastTurn === tateti.getPlayer(p)) {
                 throw new BoardException(_("Wrong turn"), 40);
             }
         }
 
-        if (this.countPositions(getPlayer(p)) >= 3) {
+        if (this.countPositions(tateti.getPlayer(p)) >= 3) {
             // should never actually be > 3
             console.log((p));
-            console.log(getPlayer(p));
-            console.log(this.countPositions(getPlayer(p)));
+            console.log(tateti.getPlayer(p));
+            console.log(this.countPositions(tateti.getPlayer(p)));
             throw new BoardException(_("All pieces already on board"), 40);
         }
 
@@ -261,7 +250,7 @@ var tateti = (function() {
     /* reverse a move */
     Board.prototype.unmove = function(move) {
         this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN, NO_MOVE_COUNT);
-        this.lastTurn = prevMove(getPlayer(move.p));
+        this.lastTurn = prevMove(tateti.getPlayer(move.p));
         this.moveCount--;
     }
 
@@ -272,7 +261,7 @@ var tateti = (function() {
         var p = this.get(node1);
         this._unset(node1);
         this._set(p, node2);
-        this.lastTurn = getPlayer(p);
+        this.lastTurn = tateti.getPlayer(p);
         if (!_no_move_count) {
             this.moveCount++;
         }
@@ -317,17 +306,17 @@ var tateti = (function() {
 
         var p = this.get(node1);
         if (this.lastTurn != null && !_no_check_turn) {
-            if (this.lastTurn === getPlayer(p)) {
+            if (this.lastTurn === tateti.getPlayer(p)) {
                 throw new BoardException(_("Wrong turn"), 40);
             }
         }
 
-        if (this.countPositions(getPlayer(p)) < 3) {
+        if (this.countPositions(tateti.getPlayer(p)) < 3) {
             throw new BoardException(_("Please place all pieces on the board before moving them"), 30);
         }
          
         if (!this.isLegalMove(node1, node2)) {
-            throw new BoardException(_("Illegal move: "), 20);
+            throw new BoardException(_("Illegal move"), 20);
         }
     }
 
@@ -389,7 +378,7 @@ var tateti = (function() {
     Board.prototype.countAllPositions = function() {
         var count = 0;
         for (var node in this.rep) {
-            if (getPlayer(this.get(node)) !== EMPTY) {
+            if (tateti.getPlayer(this.get(node)) !== EMPTY) {
                 ++count;
             }
         }
@@ -401,7 +390,7 @@ var tateti = (function() {
     Board.prototype.countPositions = function(p) {
         var count = 0;
         for (var node in this.rep) {
-            if (getPlayer(this.get(node)) === p) {
+            if (tateti.getPlayer(this.get(node)) === p) {
                 ++count;
             }
         }
@@ -437,9 +426,9 @@ var tateti = (function() {
     Board.prototype.checkWinner = function() {
         var ret = null;
         for (var i in wins) {
-            var p1 = getPlayer(this.get(wins[i][0]));
-            var p2 = getPlayer(this.get(wins[i][1]));
-            var p3 = getPlayer(this.get(wins[i][2]));
+            var p1 = tateti.getPlayer(this.get(wins[i][0]));
+            var p2 = tateti.getPlayer(this.get(wins[i][1]));
+            var p3 = tateti.getPlayer(this.get(wins[i][2]));
 
             if (p1 != EMPTY && p1 === p2 && p2 === p3) {
                 this.gameOver = true;
@@ -636,6 +625,17 @@ var tateti = (function() {
         BoardEvent: BoardEvent,
         BoardException: BoardException,
         History: History,
+
+        /* return the player to which a given piece belongs */
+        getPlayer: function(p) {
+            if (p.indexOf(P1) == 0) {
+                return P1;
+            }
+            else if (p.indexOf(P2) == 0) {
+                return P2;
+            }
+            return EMPTY;
+        }
     }
 })();
 
