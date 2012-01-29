@@ -85,10 +85,12 @@
             // initialize status system
             tateti.ui.status.init();
             tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
-            tateti.ui.status.set('time', '-:--');
 
             // initialize timer system
-            tateti.ui.timer.init();
+            tateti.ui.timer.init(tateti.ui.timer.DEFAULT_TIME_SECS);
+
+            // initialize menu system
+            tateti.ui.menu.init();
 
             tateti.ui._inited = true;
         },
@@ -208,9 +210,10 @@
                             tateti.ui.board.action(tateti.ui.piece.selectedId, node);
                             tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
                             if (!tateti.ui._stopped) {
-                                tateti.ui.status.set('time', '-:--');
                                 tateti.ui.status.setCritical('time', false);
-                                tateti.ui.timer.down.restart();
+                                if (tateti.ui.board.moveCount == 1) {
+                                    tateti.ui.timer.start();
+                                }
                             }
                         }
                         catch(ex) {
@@ -342,6 +345,7 @@
                 tateti.ui.message.hide();
                 tateti.ui.piece.enable();
                 tateti.ui.cell.enable();
+                tateti.ui.timer.reset();
                 tateti.ui._stopped = false;
             },
             onaction: function(e) {
@@ -364,82 +368,58 @@
                 tateti.ui.timer.stop();
             }
         },
+        menu: {
+            init: function() {
+                $('.menu').each(function() {
+                    $(this).bind('click', tateti.ui.menu.open);
+                });
+            },
+            open: function(e) {
+                console.log(e);
+            }
+        },
         timer: {
-            DEFAULT_MOVE_TIME_LIMIT_SECS: 20,
+            DEFAULT_TIME_SECS: 120,
             CRITICAL_TIME_SECS: 10,
 
-            moveTimeLimitSecs: -1,
+            time: { },
+            _iid: null,
+            secs: -1,
 
-            init: function() {
-                tateti.ui.timer.moveTimeLimitSecs = tateti.ui.timer.DEFAULT_MOVE_TIME_LIMIT_SECS;
+            init: function(secs) {
+                tateti.ui.timer.secs = secs;
+                tateti.ui.timer.reset(secs);
+            },
+            reset: function() {
+                tateti.ui.timer.time[tateti.P1] = tateti.ui.timer.secs;
+                tateti.ui.timer.time[tateti.P2] = tateti.ui.timer.secs;
+                tateti.ui.status.set('time', tateti.ui.timer.formatTime(tateti.ui.timer.secs));
+                tateti.ui.status.setCritical('time', false);
+            },
+            start: function() {
+                tateti.ui.timer._iid = setInterval(tateti.ui.timer._tick, 1000);
             },
             stop: function() {
-                tateti.ui.timer.up.stop();
-                tateti.ui.timer.down.stop();
+                clearInterval(tateti.ui.timer._iid);
             },
-            up: {
-                secs: null,
-                _iid: null,
+            _tick: function() {
+                var p = tateti.prevTurn(tateti.ui.board.lastTurn);
+                tateti.ui.timer.time[p] -= 1;
+                tateti.ui.timer.ontick(p);
+            },
+            ontick: function(p) {
+                var isCritical = (tateti.ui.timer.time[p] <= tateti.ui.timer.CRITICAL_TIME_SECS);
+                var t = tateti.ui.timer.time[p]; 
 
-                start: function() {
-                    tateti.ui.timer.up._iid = setInterval(tateti.ui.timer.up._tick, 1000);
-                },
-                reset: function() {
-                    tateti.ui.timer.up.secs = 0;
-                },
-                stop: function() {
-                    clearInterval(tateti.ui.timer.up._iid);
-                },
-                restart: function() {
-                    tateti.ui.timer.up.stop();
-                    tateti.ui.timer.up.reset();
-                    tateti.ui.timer.up.start();
-                },
-                _tick: function() {
-                    tateti.ui.timer.up.secs += 1;
-                    tateti.ui.timer.up.ontick();
-                },
-                ontick: function() {
-                    tateti.ui.status.set('time', tateti.ui.timer.formatTime(tateti.ui.timer.secs));
+                tateti.ui.status.set('time', tateti.ui.timer.formatTime(t), p);
+                tateti.ui.status.setCritical('time', isCritical, p);
+                if (t == 0) {
+                    tateti.ui.timer.stop();
+                    tateti.ui.timer.onzero(p);
                 }
             },
-            down: {
-                secs: null,
-                _iid: null,
-
-                start: function() {
-                    tateti.ui.timer.down._iid = setInterval(tateti.ui.timer.down._tick, 1000);
-                },
-                reset: function() {
-                    tateti.ui.timer.down.secs = 0;
-                },
-                stop: function() {
-                    clearInterval(tateti.ui.timer.down._iid);
-                },
-                restart: function() {
-                    tateti.ui.timer.down.stop();
-                    tateti.ui.timer.down.reset();
-                    tateti.ui.timer.down.start();
-                },
-                _tick: function() {
-                    tateti.ui.timer.down.secs += 1;
-                    tateti.ui.timer.down.ontick();
-                },
-                ontick: function() {
-                    var t = tateti.ui.timer.moveTimeLimitSecs - tateti.ui.timer.down.secs; 
-                    var isCritical = (t <= tateti.ui.timer.CRITICAL_TIME_SECS);
-                    var p = tateti.prevTurn(tateti.ui.board.lastTurn);
-
-                    tateti.ui.status.set('time', tateti.ui.timer.formatTime(t), p);
-                    tateti.ui.status.setCritical('time', isCritical, p);
-                    if (t == 0) {
-                        tateti.ui.timer.down.stop();
-                        tateti.ui.timer.down.onzero();
-                    }
-                },
-                onzero: function() {
-                    tateti.ui.board.forceWinner(tateti.ui.board.lastTurn);
-                }
+            onzero: function(p) {
+                tateti.ui.board.forceWinner(tateti.prevTurn(p));
             },
             formatTime: function(t) {
                 function pad(n) {

@@ -54,20 +54,44 @@ body {
 
 
 /* menu */
-#menu {
+.menu {
     position: absolute;
     bottom: 28px;
     left: 18px; /*265px;*/
     width: 32px;
     height: 32px;
     background: transparent url(../images/options.png) 0 0 no-repeat;
+    cursor: pointer;
     }
-    #menu a {   
+    .menu a {   
         width: 32px;
         height: 32px;
         display: block;
         text-indent: -9999px;
         overflow: hidden;
+        }
+    .menu.P1 {
+        top: 411px;
+        left: 16px;
+        }
+    .menu.P2 {
+        top: 85px;
+        left: 273px;
+
+        -moz-transform: rotate(180deg);
+        -moz-transform-origin: 50% 0%;
+
+        -webkit-transform: rotate(180deg);
+        -webkit-transform-origin: 50% 0%;
+
+        -o-transform:rotate(180deg); 
+        -o-transform-origin:50% 0%;
+
+        -ms-transform: rotate(180deg);
+        -ms-transform-origin: 50% 0%;
+
+        transform: rotate(180deg);
+        transform-origin: 50% 0%;
         }
 
 #menu-overlay {
@@ -189,7 +213,7 @@ body {
     background: #fff;
     color: #000;
     font-weight: normal;
-    padding: 6px 12px;
+    padding: 6px 8px;
     -webkit-border-radius: 6px; /* Saf3-4, iOS 1-3.2, Android ≤1.6 */
     -moz-border-radius: 6px; /* FF1-3.6 */
     border-radius: 6px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
@@ -200,7 +224,7 @@ body {
     -webkit-box-shadow: inset 0 0 6px #666;
      box-shadow:        inset 1px 1px 4px #666;
 
-    width: 98px;
+    width: 62px;
     min-height: 26px;
     text-align: center;
     }
@@ -210,19 +234,24 @@ body {
         }
         .status dl dt {
             display: block;
+            clear: both;
             float: left;
-            width: 5em;
-            text-align: left;
+            width: 16px;
+            height: 16px;
+            text-align: right;
             margin: 0;
-            padding: 0;
+            padding: 0 4px;
             }
+            .status dl dt.time {
+                background: url(../images/clock.png) 4px 0 no-repeat;
+                }
         .status dl dd {
             float: right;
             display: block;
             text-align: left;
             min-width: 3em;
             margin: 0;
-            padding: 0;
+            padding: 1px 0 0 0;
             }
     .status .critical {
         color: #a00;
@@ -230,11 +259,11 @@ body {
         }
     .status.P1 {
         top: 407px;
-        left: 16px;
+        left: 58px;
         }
     .status.P2 {
         top: 89px;
-        left: 181px;
+        left: 187px;
 
         -moz-transform: rotate(180deg);
         -moz-transform-origin: 50% 0%;
