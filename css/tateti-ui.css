@@ -133,7 +133,7 @@ body {
 
 /* messages */
 .message {
-    kdisplay: none;
+    display: none;
     position: absolute;
     z-index: 20;
     font-family: verdana, sans-serif;
