@@ -68,7 +68,7 @@
             
             // create the logical board
             tateti.ui.board = new tateti.Board();
-            tateti.ui.board.drawLimit = 6;
+            tateti.ui.board.drawLimit = 30;
 
             // initialize cells
             tateti.ui.cell.init();
@@ -81,6 +81,14 @@
 
             // initialize message system
             tateti.ui.message.init();
+
+            // initialize status system
+            tateti.ui.status.init();
+            tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
+            tateti.ui.status.set('time', '-:--');
+
+            // initialize timer system
+            tateti.ui.timer.init();
 
             tateti.ui._inited = true;
         },
@@ -192,8 +200,15 @@
                     if (tateti.ui.piece.selected) {
                         try {
                             tateti.ui.board.action(tateti.ui.piece.selectedId, node);
+                            tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
+                            if (!tateti.ui._stopped) {
+                                tateti.ui.status.set('time', '-:--');
+                                tateti.ui.status.setCritical('time', false);
+                                tateti.ui.timer.down.restart();
+                            }
                         }
                         catch(ex) {
+                            console.log(ex);
                             tateti.ui.audio.play('error');
                             tateti.ui.message.flash(
                                 errorMessages[ex.code],
@@ -305,6 +320,7 @@
             },
             onstop: function(e) {
                 tateti.ui._stopped = true;
+                tateti.ui.timer.stop();
                 // [TODO: add class to all pieces/cells to remove finger cursor ?]
             },
             onreset: function(e) {
@@ -322,14 +338,122 @@
                 var w = e.win.winner;
                 if (w) {
                     tateti.ui.audio.play('win');
-                    $('.' + w).effect('pulsate', { times: 5 }, 'slow');
+                    $('.piece.' + w).effect('pulsate', { times: 5 }, 'slow');
                 }
-                tateti.ui.message.show(_("Winner!"), tateti.ui.board.lastTurn);
+                tateti.ui.message.show(_("Winner!"), w);
             },
             ondraw: function(e) {
                 tateti.ui.audio.play('win');
                 $('.piece').effect('pulsate', { times: 5 }, 'slow');
                 tateti.ui.message.show(_("Game drawn!"));
+                tateti.ui.timer.stop();
+            }
+        },
+        timer: {
+            DEFAULT_MOVE_TIME_LIMIT_SECS: 20,
+            CRITICAL_TIME_SECS: 10,
+
+            moveTimeLimitSecs: -1,
+
+            init: function() {
+                tateti.ui.timer.moveTimeLimitSecs = tateti.ui.timer.DEFAULT_MOVE_TIME_LIMIT_SECS;
+            },
+            stop: function() {
+                tateti.ui.timer.up.stop();
+                tateti.ui.timer.down.stop();
+            },
+            up: {
+                secs: null,
+                _iid: null,
+
+                start: function() {
+                    tateti.ui.timer.up._iid = setInterval(tateti.ui.timer.up._tick, 1000);
+                },
+                reset: function() {
+                    tateti.ui.timer.up.secs = 0;
+                },
+                stop: function() {
+                    clearInterval(tateti.ui.timer.up._iid);
+                },
+                restart: function() {
+                    tateti.ui.timer.up.stop();
+                    tateti.ui.timer.up.reset();
+                    tateti.ui.timer.up.start();
+                },
+                _tick: function() {
+                    tateti.ui.timer.up.secs += 1;
+                    tateti.ui.timer.up.ontick();
+                },
+                ontick: function() {
+                    tateti.ui.status.set('time', tateti.ui.timer.formatTime(tateti.ui.timer.secs));
+                }
+            },
+            down: {
+                secs: null,
+                _iid: null,
+
+                start: function() {
+                    tateti.ui.timer.down._iid = setInterval(tateti.ui.timer.down._tick, 1000);
+                },
+                reset: function() {
+                    tateti.ui.timer.down.secs = 0;
+                },
+                stop: function() {
+                    clearInterval(tateti.ui.timer.down._iid);
+                },
+                restart: function() {
+                    tateti.ui.timer.down.stop();
+                    tateti.ui.timer.down.reset();
+                    tateti.ui.timer.down.start();
+                },
+                _tick: function() {
+                    tateti.ui.timer.down.secs += 1;
+                    tateti.ui.timer.down.ontick();
+                },
+                ontick: function() {
+                    var t = tateti.ui.timer.moveTimeLimitSecs - tateti.ui.timer.down.secs; 
+                    var isCritical = (t <= tateti.ui.timer.CRITICAL_TIME_SECS);
+                    var p = tateti.prevTurn(tateti.ui.board.lastTurn);
+
+                    tateti.ui.status.set('time', tateti.ui.timer.formatTime(t), p);
+                    tateti.ui.status.setCritical('time', isCritical, p);
+                    if (t == 0) {
+                        tateti.ui.timer.down.stop();
+                        tateti.ui.timer.down.onzero();
+                    }
+                },
+                onzero: function() {
+                    tateti.ui.board.forceWinner(tateti.ui.board.lastTurn);
+                }
+            },
+            formatTime: function(t) {
+                function pad(n) {
+                    return (n < 10) ? ('0' + n) : (n);
+                }
+                var m = (t - (t % 60)) / 60;
+                return m + ':' + pad(t - (m * 60));
+            }
+        },
+        status: {
+            init: function() {
+                tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
+            },
+            set: function(field, value, p) {
+                var selector1 = '.status dd.' + field; 
+                if (typeof(p) !== 'undefined') {
+                    var selector1 = '.status.' + p + ' dd.' + field; 
+                }
+                $(selector1).html(value);
+            },
+            setCritical: function(field, critical, p) {
+                var selector1 = '.status dd.' + field; 
+                if (typeof(p) !== 'undefined') {
+                    var selector1 = '.status.' + p + ' dd.' + field; 
+                }
+                $(selector1).removeClass('critical');
+                if (critical) {
+                    $(selector1).addClass('critical');
+                }
             }
         },
         message: {
@@ -338,20 +462,24 @@
             VISUAL_ERROR_BELL_OFF_DELAY: 750,
 
             init: function() {
-                $('.message').bind('click', function() {
-                    tateti.ui.message.hide();
+                $('.message.' + tateti.P1).bind('click', function() {
+                    tateti.ui.message.hide(tateti.P1);
+                    return false;
+                });
+                $('.message.' + tateti.P2).bind('click', function() {
+                    tateti.ui.message.hide(tateti.P2);
                     return false;
                 });
             },
             show: function(s, p) {
+                var selector1 = '.message .content';
+                var selector2 = '.message';
                 if (typeof(p) !== 'undefined') {
-                    $('.message.'+ p +' .content').html(s);
-                    $('.message.'+ p).show();
+                    selector1 = '.message.'+ p +' .content';
+                    selector2 = '.message.'+ p;
                 }
-                else {
-                    $('.message .content').html(s);
-                    $('.message').show();
-                }
+                $(selector1).html(s);
+                $(selector2).show();
             },
             flash: function(s, p, is_error) {
                 tateti.ui.message.show(s, p);
@@ -365,12 +493,11 @@
                 }
             },
             hide: function(p) {
+                var selector1 = '.message';
                 if (typeof(p) !== 'undefined') {
-                    $('.message.' + p).hide();
+                    selector1 = '.message.' + p;
                 }
-                else {
-                    $('.message').hide();
-                }
+                $(selector1).hide();
             },
             visualErrorBell: function() {
                 setTimeout(tateti.ui.message._visual_error_on, tateti.ui.message.VISUAL_ERROR_BELL_ON_DELAY);

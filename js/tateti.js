@@ -88,15 +88,6 @@ var tateti = (function() {
         [C, E, G]
     ];
 
-    /* return the piece which has the next/prev turn
-       to the given piece p */
-    function prevMove(p) {
-        if (p === P1) {
-            return P2;
-        }
-        return P1;
-    }
-
     /* BoardAction class */
     function BoardAction(type, p, node1, node2) {
         this.type = type;
@@ -169,7 +160,7 @@ var tateti = (function() {
     Board.prototype.unset = function(action) {
         var p = this.get(action.node1);
         this._unset(action.node1);
-        this.lastTurn = prevMove(tateti.getPlayer(p));
+        this.lastTurn = tateti.prevTurn(tateti.getPlayer(p));
         this.moveCount--;
 
         var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
@@ -246,7 +237,7 @@ var tateti = (function() {
     /* reverse a move */
     Board.prototype.unmove = function(move) {
         this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN, NO_MOVE_COUNT);
-        this.lastTurn = prevMove(tateti.getPlayer(move.p));
+        this.lastTurn = tateti.prevTurn(tateti.getPlayer(move.p));
         this.moveCount--;
     }
 
@@ -437,6 +428,25 @@ var tateti = (function() {
         return ret;
     }
 
+    /* Force the given player as the winner.
+       Win combination is null in this case.
+    */
+    Board.prototype.forceWinner = function(p) {
+        var ret = null;
+
+        this.gameOver = true;
+        ret = {
+            win: null,
+            winner: p
+        }
+
+        var e = new BoardEvent(EVENT_TYPE_WIN, this, null, ret);
+        this.dispatchEvent(e);
+
+        e = new BoardEvent(EVENT_TYPE_STOP, this);
+        this.dispatchEvent(e);
+    }
+
     /* check if the the move count has reached the draw limit */
     Board.prototype.checkDraw = function() {
         if (this.moveCount == this.drawLimit) {
@@ -445,6 +455,18 @@ var tateti = (function() {
             return true;
         }
         return false;
+    }
+
+    /* Force a draw */
+    Board.prototype.forceDraw = function() {
+        this.gameOver = true;
+        this.gameDrawn = true;
+
+        var e = new BoardEvent(EVENT_TYPE_DRAW, this);
+        this.dispatchEvent(e);
+
+        e = new BoardEvent(EVENT_TYPE_STOP, this);
+        this.dispatchEvent(e);
     }
 
     Board.prototype.toString = function() {
@@ -631,7 +653,17 @@ var tateti = (function() {
                 return P2;
             }
             return EMPTY;
+        },
+
+        /* return the piece which has the next/prev turn
+           to the given piece p */
+        prevTurn: function(p) {
+            if (p === P1) {
+                return P2;
+            }
+            return P1;
         }
+
     }
 })();
 
