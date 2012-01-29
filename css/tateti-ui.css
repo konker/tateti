@@ -17,6 +17,7 @@ body {
     height: 300px;
     background: transparent url(../images/board-small.png) 0 100px no-repeat;
     }
+    #board .disabled { cursor: default !important; }
     #board .cell {
         position: absolute;
         display: none;

@@ -193,6 +193,12 @@
                     $(this).bind('click', tateti.ui.cell.click);
                 });
             },
+            disable: function() {
+                $('.cell').addClass('disabled');
+            },
+            enable: function() {
+                $('.cell').removeClass('disabled');
+            },
             click: function(e) {
                 var node = $(e.target).attr('id');
 
@@ -258,6 +264,12 @@
                     $(this).bind('click', tateti.ui.piece.click);
                 });
             },
+            disable: function() {
+                $('.piece').addClass('disabled');
+            },
+            enable: function() {
+                $('.piece').removeClass('disabled');
+            },
             click: function(e) {
                 var p = $(e.target);
 
@@ -321,13 +333,16 @@
             onstop: function(e) {
                 tateti.ui._stopped = true;
                 tateti.ui.timer.stop();
-                // [TODO: add class to all pieces/cells to remove finger cursor ?]
+                tateti.ui.piece.disable();
+                tateti.ui.cell.disable();
             },
             onreset: function(e) {
                 tateti.ui.draw();
                 tateti.ui.piece.deselect();
                 tateti.ui.message.hide();
-                // [TODO: remove class to all pieces/cells to add finger cursor ?]
+                tateti.ui.piece.enable();
+                tateti.ui.cell.enable();
+                tateti.ui._stopped = false;
             },
             onaction: function(e) {
                 tateti.ui.draw();
