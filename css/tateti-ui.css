@@ -3,6 +3,9 @@ body {
     padding: 0;
     background: #dedede;
     }
+    body.error {
+        background: #933;
+        }
 #wrapper {
     padding: 0 12px;
     }
@@ -129,14 +132,14 @@ body {
 
 
 /* messages */
-#message {
-    display: none;
+.message {
+    kdisplay: none;
     position: absolute;
     z-index: 20;
     font-family: verdana, sans-serif;
     font-size: 85%;
-    background: #ddd;
-    color: #000;
+    background: #666;
+    color: #fff;
     font-weight: normal;
     padding: 12px 18px;
     -webkit-border-radius: 6px; /* Saf3-4, iOS 1-3.2, Android ≤1.6 */
@@ -144,49 +147,35 @@ body {
     border-radius: 6px; /* Opera 10.5, IE9, Saf5, Chrome, FF4, iOS 4, Android 2.1+ */
     opacity: 0.8; /* Chrome 4+, FF2+, Saf3.1+, Opera 9+, IE9, iOS 3.2+, Android 2.1+ */
     filter: alpha(opacity=80); /* IE6-IE8 */
-    width: 246px;
+    width: 258px;
+    min-height: 36px;
     text-align: center;
     }
-    #message.P1 {
-        /*
-        top: 272px;
-        left: 20px;
-        */
-        background: #99a;
-        color: #000;
-        top: 408px;
-        left: 20px;
+    .message .content {
+        display: block;
         }
-    #message.P2 {
-        background: #ffa;
-        color: #000;
-        top: 44px;
-        left: 20px;
+    .message.P1 {
+        top: 395px;
+        left: 13px;
+        }
+    .message.P2 {
+        top: 99px;
+        left: 13px;
 
         -moz-transform: rotate(180deg);
-        -moz-transform-origin: 50% 50%;
+        -moz-transform-origin: 50% 0%;
 
         -webkit-transform: rotate(180deg);
-        -webkit-transform-origin: 50% 50%;
+        -webkit-transform-origin: 50% 0%;
 
         -o-transform:rotate(180deg); 
-        -o-transform-origin:50% 50%;
+        -o-transform-origin:50% 0%;
 
         -ms-transform: rotate(180deg);
-        -ms-transform-origin: 50% 50%;
+        -ms-transform-origin: 50% 0%;
 
         transform: rotate(180deg);
-        transform-origin: 50% 50%;
-        }
-    #message .ex {
-        display: none;
-        position: absolute;
-        top: 0;
-        right: 0;
-        padding: 2px 4px;
-        border: 1px solid #fff;
-        margin: 6px;
-        cursor: pointer;
+        transform-origin: 50% 0%;
         }
 
 

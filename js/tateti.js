@@ -88,10 +88,6 @@ var tateti = (function() {
         [C, E, G]
     ];
 
-    /* [XXX: placeholder for i18n] */
-    function _(s) {
-        return s;
-    }
     /* return the piece which has the next/prev turn
        to the given piece p */
     function prevMove(p) {
@@ -225,12 +221,12 @@ var tateti = (function() {
     /* make various checks and throw a BoardException on error */
     Board.prototype.checkLegalSet = function(p, node1) {
         if (this.gameOver) {
-            throw new BoardException(_("Game over"), 50);
+            throw new BoardException("Game over", 41);
         }
 
         if (this.lastTurn != null) {
             if (this.lastTurn === tateti.getPlayer(p)) {
-                throw new BoardException(_("Wrong turn"), 40);
+                throw new BoardException("Wrong turn", 42);
             }
         }
 
@@ -239,11 +235,11 @@ var tateti = (function() {
             console.log((p));
             console.log(tateti.getPlayer(p));
             console.log(this.countPositions(tateti.getPlayer(p)));
-            throw new BoardException(_("All pieces already on board"), 40);
+            throw new BoardException("All pieces already on board", 43);
         }
 
         if (!this.isEmpty(node1)) {
-            throw new BoardException(_("Not an empty slot"), 40);
+            throw new BoardException("Illegal move", 40);
         }
     }
 
@@ -297,26 +293,26 @@ var tateti = (function() {
     /* make various checks and throw a BoardException on error */
     Board.prototype.checkLegalMove = function(node1, node2, _no_check_turn) {
         if (this.gameOver) {
-            throw new BoardException(_("Game over"), 50);
+            throw new BoardException("Game over", 41);
         }
 
         if (this.isEmpty(node1)) {
-            throw new BoardException(_("Illegal move"), 20);
+            throw new BoardException("Illegal move", 40);
         }
 
         var p = this.get(node1);
         if (this.lastTurn != null && !_no_check_turn) {
             if (this.lastTurn === tateti.getPlayer(p)) {
-                throw new BoardException(_("Wrong turn"), 40);
+                throw new BoardException("Wrong turn", 42);
             }
         }
 
         if (this.countPositions(tateti.getPlayer(p)) < 3) {
-            throw new BoardException(_("Please place all pieces on the board before moving them"), 30);
+            throw new BoardException("Place all pieces on the board before moving them", 44);
         }
          
         if (!this.isLegalMove(node1, node2)) {
-            throw new BoardException(_("Illegal move"), 20);
+            throw new BoardException("Illegal move", 40);
         }
     }
 
@@ -582,7 +578,7 @@ var tateti = (function() {
         this.code = code || -1;
     }
     BoardException.prototype.toString = function() {
-        return this.msg;
+        return this.msg + ' | ' + this.code;
     }
 
     /* public interface */
