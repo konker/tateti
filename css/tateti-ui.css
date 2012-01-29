@@ -55,6 +55,7 @@ body {
 
 /* menu */
 .menu {
+    display: none;
     position: absolute;
     bottom: 28px;
     left: 18px; /*265px;*/
