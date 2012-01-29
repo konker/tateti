@@ -210,7 +210,6 @@
                             tateti.ui.board.action(tateti.ui.piece.selectedId, node);
                             tateti.ui.status.set('moves', tateti.ui.board.moveCount + '/' + tateti.ui.board.drawLimit);
                             if (!tateti.ui._stopped) {
-                                tateti.ui.status.setCritical('time', false);
                                 if (tateti.ui.board.moveCount == 1) {
                                     tateti.ui.timer.start();
                                 }
@@ -338,6 +337,7 @@
                 tateti.ui.timer.stop();
                 tateti.ui.piece.disable();
                 tateti.ui.cell.disable();
+                tateti.ui.message.visualAlertOff();
             },
             onreset: function(e) {
                 tateti.ui.draw();
@@ -382,22 +382,28 @@
             DEFAULT_TIME_SECS: 120,
             CRITICAL_TIME_SECS: 10,
 
-            time: { },
+            time: null,
             _iid: null,
             secs: -1,
 
             init: function(secs) {
+                tateti.ui.timer.time = {};
                 tateti.ui.timer.secs = secs;
-                tateti.ui.timer.reset(secs);
+                tateti.ui.timer.reset();
             },
             reset: function() {
-                tateti.ui.timer.time[tateti.P1] = tateti.ui.timer.secs;
-                tateti.ui.timer.time[tateti.P2] = tateti.ui.timer.secs;
+                if (tateti.ui.timer.secs > 0) {
+                    tateti.ui.timer.time[tateti.P1] = tateti.ui.timer.secs;
+                    tateti.ui.timer.time[tateti.P2] = tateti.ui.timer.secs;
+                }
                 tateti.ui.status.set('time', tateti.ui.timer.formatTime(tateti.ui.timer.secs));
                 tateti.ui.status.setCritical('time', false);
+                tateti.ui.message.visualAlertOff();
             },
             start: function() {
-                tateti.ui.timer._iid = setInterval(tateti.ui.timer._tick, 1000);
+                if (tateti.ui.timer.time) {
+                    tateti.ui.timer._iid = setInterval(tateti.ui.timer._tick, 1000);
+                }
             },
             stop: function() {
                 clearInterval(tateti.ui.timer._iid);
@@ -413,6 +419,12 @@
 
                 tateti.ui.status.set('time', tateti.ui.timer.formatTime(t), p);
                 tateti.ui.status.setCritical('time', isCritical, p);
+                if (isCritical) {
+                    tateti.ui.message.visualAlertOn();
+                }
+                else {
+                    tateti.ui.message.visualAlertOff();
+                }
                 if (t == 0) {
                     tateti.ui.timer.stop();
                     tateti.ui.timer.onzero(p);
@@ -425,8 +437,11 @@
                 function pad(n) {
                     return (n < 10) ? ('0' + n) : (n);
                 }
-                var m = (t - (t % 60)) / 60;
-                return m + ':' + pad(t - (m * 60));
+                if (t >= 0) { 
+                    var m = (t - (t % 60)) / 60;
+                    return m + ':' + pad(t - (m * 60));
+                }
+                return '-:--';
             }
         },
         status: {
@@ -495,13 +510,16 @@
                 $(selector1).hide();
             },
             visualErrorBell: function() {
-                setTimeout(tateti.ui.message._visual_error_on, tateti.ui.message.VISUAL_ERROR_BELL_ON_DELAY);
+                setTimeout(tateti.ui.message.visualAlertFlash, tateti.ui.message.VISUAL_ERROR_BELL_ON_DELAY);
             },
-            _visual_error_on: function() {
-                $('body').removeClass().addClass('error');
-                setTimeout(tateti.ui.message._visual_error_off, tateti.ui.message.VISUAL_ERROR_BELL_OFF_DELAY);
+            visualAlertFlash: function() {
+                tateti.ui.message.visualAlertOn();
+                setTimeout(tateti.ui.message.visualAlertOff, tateti.ui.message.VISUAL_ERROR_BELL_OFF_DELAY);
            },
-            _visual_error_off: function() {
+            visualAlertOn: function() {
+                $('body').removeClass().addClass('error');
+            },
+            visualAlertOff: function() {
                 $('body').removeClass();
            }
         }
