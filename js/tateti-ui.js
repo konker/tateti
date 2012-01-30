@@ -142,13 +142,13 @@
                     tateti.ui.audio._enabled = false;
                 }
                 */
-
-                //[FIXME: what about preload?]
+                tateti.ui.audio.preload();
             },
             preload: function() {
                 if (tateti.ui.audio._enabled) {
                     for (var n in tateti.ui.audio.res) {
                         var a = new Audio(tateti.ui.audio.res[n]);
+                        tateti.ui.audio.res[n] = a;
                     }
                 }
             },
@@ -157,7 +157,7 @@
                     if (tateti.ui.audio._audio) {
                         tateti.ui.audio._audio.pause();
                     }
-                    tateti.ui.audio._audio = new tateti.Audio(tateti.ui.audio.res[n]);
+                    tateti.ui.audio._audio = tateti.ui.audio.res[n];
                     tateti.ui.audio._audio.play();
                 }
             },
@@ -381,7 +381,7 @@
             }
         },
         timer: {
-            DEFAULT_TIME_SECS: 20,
+            DEFAULT_TIME_SECS: 45,
             CRITICAL_TIME_SECS: 10,
 
             time: null,
