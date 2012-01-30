@@ -124,6 +124,8 @@
             res: {
                 tap:   'mp3/tap.mp3',
                 blip:  'mp3/blip.mp3',
+                beep1:  'mp3/beep1.mp3',
+                beep2:  'mp3/beep2.mp3',
                 error: 'mp3/error.mp3',
                 win:   'mp3/win.mp3',
             },
@@ -379,7 +381,7 @@
             }
         },
         timer: {
-            DEFAULT_TIME_SECS: 120,
+            DEFAULT_TIME_SECS: 20,
             CRITICAL_TIME_SECS: 10,
 
             time: null,
@@ -421,6 +423,12 @@
                 tateti.ui.status.setCritical('time', isCritical, p);
                 if (isCritical) {
                     tateti.ui.message.visualAlertOn();
+                    if (p == tateti.P1) {
+                        tateti.ui.audio.play('beep1');
+                    }
+                    else {
+                        tateti.ui.audio.play('beep2');
+                    }
                 }
                 else {
                     tateti.ui.message.visualAlertOff();
