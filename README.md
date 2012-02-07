@@ -28,4 +28,3 @@ Todo
 - A game series, or set, where score is kept over a number of games (?)
 - a phonegap version for various mobile devices (?)
 
-- 
