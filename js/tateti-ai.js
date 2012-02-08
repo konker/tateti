@@ -8,14 +8,15 @@
 
  */
 
-if (typeof(tateti) == 'undefined') {
-    throw "tateti object dependency not found";
-}
-
-
-tateti.ai = {
-    init: function() {
+(function(exports){
+    if (typeof(exports['tateti']) === 'undefined') {
+        throw "tateti object dependency not found";
     }
-}
-$(tateti.ai.init);
+
+
+    exports.tateti.ai = {
+        init: function() {
+        }
+    }
+})(typeof exports === 'undefined'? this: exports);
 

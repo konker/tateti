@@ -9,7 +9,9 @@
     - Add DRAW after x number of total moves?
 */
 
-var tateti = (function() {
+var morningwood = require('./morningwood');
+
+(function(exports){
 
     /* node symbols */
     var A = "A";
@@ -604,7 +606,7 @@ var tateti = (function() {
     }
 
     /* public interface */
-    return {
+    morningwood.extend(exports, {
         A: A,
         B: B,
         C: C,
@@ -664,6 +666,6 @@ var tateti = (function() {
             return P1;
         }
 
-    }
-})();
+    });
+})(typeof exports === 'undefined'? this['tateti']={}: exports);
 

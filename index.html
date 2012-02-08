@@ -3,17 +3,26 @@
     <head>
         <title>Ta-Te-Ti</title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-        <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
         <meta name="apple-mobile-web-app-capable" content="YES"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />        
         <link rel="apple-touch-icon" href="images/apple-touch-icon.png"/>
 
+        <!--
         <script type="text/javascript" src="js/phonegap.js"></script>
+        -->
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/jquery-ui.custom.min.js"></script>
+        <script type="text/javascript" src="js/mock-require.js"></script>
         <script type="text/javascript" src="js/morningwood.js"></script>
         <script type="text/javascript" src="js/tateti.js"></script>
         <script type="text/javascript" src="js/tateti-ui.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                tateti.ui.init();
+            });
+        </script>
+
         <style type="text/css">
             @import url(css/tateti-ui.css);
         </style>

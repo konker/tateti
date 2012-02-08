@@ -8,10 +8,10 @@
 
  */
 
-(function(){
-    if (typeof(tateti) == 'undefined') {
-        throw "tateti object dependency not found";
-    }
+var morningwood = require('./morningwood'),
+    tateti = require('./tateti');
+
+(function(exports){
 
     /* [XXX: placeholder for i18n] */
     function _(s) {
@@ -29,7 +29,7 @@
     var IS_ERROR = 1;
 
     /* class to abstract basic audio playback funcitonality */
-    tateti.Audio = function(url) {
+    exports.Audio = function(url) {
         if (typeof PhoneGap !== "undefined") {
             this._is_phonegap = true;
         }
@@ -40,10 +40,10 @@
             this.rep = new Audio(url);
         }
     }
-    tateti.Audio.prototype.play = function() {
+    exports.Audio.prototype.play = function() {
         this.rep.play();
     }
-    tateti.Audio.prototype.pause = function() {
+    exports.Audio.prototype.pause = function() {
         this.rep.pause();
         if (this._is_phonegap) {
             this.rep.release();
@@ -51,7 +51,7 @@
     }
 
 
-    tateti.ui = {
+    morningwood.extend(exports, {
         _inited: false,
         _stopped: false,
         _is_phonegap: false,
@@ -531,7 +531,6 @@
                 $('body').removeClass();
            }
         }
-    }
-})();
-$(tateti.ui.init);
+    });
+})(typeof exports === 'undefined'? tateti['ui']={}: exports);
 

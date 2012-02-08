@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+// Generate a JSON representation of all valid Ta-Te-Ti game state
+var morningwood = require('../js/morningwood');
+var tateti = require('../js/tateti');
+
+var b = new tateti.Board();
+console.log(b.toString());
