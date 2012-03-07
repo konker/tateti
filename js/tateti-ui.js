@@ -381,7 +381,7 @@ var morningwood = require('./morningwood'),
             }
         },
         timer: {
-            DEFAULT_TIME_SECS: 45,
+            DEFAULT_TIME_SECS: 45000,
             CRITICAL_TIME_SECS: 10,
 
             time: null,

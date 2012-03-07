@@ -11,6 +11,7 @@ if (typeof require === 'undefined') {
         if (module && module.indexOf('./') == 0) {
             module = module.substr(2);
         }
+        module = module.replace(/-/, '.');
         if (typeof this[module] === 'undefined') {
             console.log('Module not found: ' + module);
         }

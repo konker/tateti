@@ -20,6 +20,16 @@
         return destination;
     }
 
+    exports.sizeOf = function(obj) {
+        var size = 0, prop;
+        for (prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                size++;
+            }
+        }
+        return size;
+    }
+
     Function.prototype.mixin = function(m) {
         var that = this;
         that.prototype = new m();

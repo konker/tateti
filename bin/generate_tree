@@ -1,8 +1,64 @@
 #!/usr/bin/env node
 
-// Generate a JSON representation of all valid Ta-Te-Ti game state
-var morningwood = require('../js/morningwood');
-var tateti = require('../js/tateti');
+/**
+  Generate a JSON representation of all valid Ta-Te-Ti game state
+  Works in a "brute force" way, trying all possible moves.
+  Relies on the game engine to determine legal/winning moves.
+     - How do you know when you have back to a previous position?
+*/
+
+
+var morningwood = require('../js/morningwood'),
+    tateti = require('../js/tateti');
+    tateti.ai = require('../js/tateti-ai');
+
+
+
+var ids = {};
+
+function getActions(board) {
+    var ret = {};
+    
+    var available = tateti.ai.getAvailableActions(board);
+    for (var a in available) {
+        board.exec(available[a]);
+
+        var id = board.toIdString();
+        if (!(id in ids)) {
+            var p = board.checkWinningPlayer(),
+                win = (p == tateti.P2),
+                lose = (p == tateti.P1);
+            
+            ret[id] = {
+                win: win,
+                lose: lose,
+                children : null
+            }
+            ids[id] = ret[id];
+
+            if (!ret[id].winner) {
+                ret[id].children = getActions(board);
+            }
+        }
+        board.undo();
+    }
+    return ret;
+}
 
 var b = new tateti.Board();
-console.log(b.toString());
+b.drawLimit = -1;
+
+/*[XXX: this is a bit baroque?]*/
+console.log("var morningwood = require('../js/morningwood'),");
+console.log("    tateti = require('../js/tateti');");
+console.log("    tateti.ai = require('../js/tateti-ai');");
+console.log("(function(exports){");
+console.log("    exports.tree = ");
+getActions(b);
+//console.log(JSON.stringify(getActions(b)));
+console.log("    ;");
+console.log("})(typeof exports === 'undefined'? tateti['ai']={}: exports);");
+console.log(Object.keys(ids).length);
+
+
+

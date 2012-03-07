@@ -6,7 +6,6 @@
 */
 
 /* TODO:
-    - Add DRAW after x number of total moves?
 */
 
 var morningwood = require('./morningwood');
@@ -39,7 +38,8 @@ var morningwood = require('./morningwood');
     var pieces = [P11, P12, P13, P21, P22, P23];
 
     /* node state symbols */
-    var EMPTY = ".";
+    var ID_EMPTY = "--";
+    var EMPTY = "•"; // &#x2022;
     var P1 = "P1";
     var P2 = "P2";
 
@@ -59,6 +59,7 @@ var morningwood = require('./morningwood');
 
     var NO_HISTORY = 1;
     var NO_CHECK_TURN = 1;
+    var NO_CHECK_GAMEOVER = 1;
     var NO_MOVE_COUNT = 1;
 
     /* board graph */
@@ -103,13 +104,16 @@ var morningwood = require('./morningwood');
             s += "->" + this.node2;
         }
         return s;
-        
     }
 
     /* Board class */
     function Board() {
         /* struct representing the board */
         this.rep = {};
+        this.piecePositions = {
+            P1: {},
+            P2: {}
+        };
 
         this.lastTurn  = null;
         this.gameOver  = false; 
@@ -123,6 +127,48 @@ var morningwood = require('./morningwood');
         this._reset();
     }
     Board.mixin(morningwood.Evented);
+
+    /* Re-initialize the board with the state captured
+       in the give id string. Other state will not be
+       changed.
+       The piecePositions hash will not necessarily be
+       exactly the same; pieces will be assinged to it
+       in the order that they appear in the id, L-R.
+
+   */
+    Board.prototype.fromIdString = function(id) {
+        var parts = id.match(/../g);
+        this.lastTurn = parts.pop();
+        console.log(parts);
+
+        var counts = { P1: 0, P2: 0 }
+        
+        for (var i=0; i<parts.length; i++) {
+            if (parts[i] != ID_EMPTY) {
+                var player = parts[i];
+                counts[player] += 1; 
+
+                var p = player + counts[player];
+                this._set(p, nodes[i]);
+                console.log('_set: ' + p + ', ' + nodes[i]);
+            }
+        }
+    }
+
+    /* Capture the piece positions and lastTurn in a id string */
+    Board.prototype.toIdString = function() {
+        var s = '';
+        for (var node in this.rep) {
+            if (this.isEmpty(node)) {
+                s += ID_EMPTY;
+            }
+            else {
+                s += exports.getPlayer(this.get(node));
+            }
+        }
+        s += this.lastTurn;
+        return s;
+    }
 
     /* facade for history undo */
     Board.prototype.undo = function() {
@@ -147,6 +193,16 @@ var morningwood = require('./morningwood');
         return this.rep[node];
     }
 
+    /* execute the given BoardAction */
+    Board.prototype.exec = function(action) {
+        if (action.type == BOARD_ACTION_TYPE_SET) {
+            this.set(action.p, action.node1);
+        }
+        else {
+            this.move(action.node1, action.node2);
+        }
+    }
+
     /* perform an action on the given cell */
     Board.prototype.action = function(p, node2) {
         var node1 = this.getCell(p);
@@ -160,9 +216,7 @@ var morningwood = require('./morningwood');
 
     /* set the state of the cell at the given board node to be EMPTY */
     Board.prototype.unset = function(action) {
-        var p = this.get(action.node1);
         this._unset(action.node1);
-        this.lastTurn = tateti.prevTurn(tateti.getPlayer(p));
         this.moveCount--;
 
         var e = new BoardEvent(EVENT_TYPE_UNSET, this, action);
@@ -180,7 +234,6 @@ var morningwood = require('./morningwood');
         }
 
         this._set(p, node1);
-        this.lastTurn = tateti.getPlayer(p);
         this.moveCount++;
 
         var action = new BoardAction(BOARD_ACTION_TYPE_SET, p, node1, null);
@@ -218,16 +271,16 @@ var morningwood = require('./morningwood');
         }
 
         if (this.lastTurn != null) {
-            if (this.lastTurn === tateti.getPlayer(p)) {
+            if (this.lastTurn === exports.getPlayer(p)) {
                 throw new BoardException("Wrong turn", 42);
             }
         }
 
-        if (this.countPositions(tateti.getPlayer(p)) >= 3) {
+        if (this.countPositions(exports.getPlayer(p)) >= 3) {
             // should never actually be > 3
             console.log((p));
-            console.log(tateti.getPlayer(p));
-            console.log(this.countPositions(tateti.getPlayer(p)));
+            console.log(exports.getPlayer(p));
+            console.log(this.countPositions(exports.getPlayer(p)));
             throw new BoardException("All pieces already on board", 43);
         }
 
@@ -238,19 +291,18 @@ var morningwood = require('./morningwood');
 
     /* reverse a move */
     Board.prototype.unmove = function(move) {
-        this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN, NO_MOVE_COUNT);
-        this.lastTurn = tateti.prevTurn(tateti.getPlayer(move.p));
+        this.move(move.node2, move.node1, NO_HISTORY, NO_CHECK_TURN, NO_MOVE_COUNT, NO_CHECK_GAMEOVER);
+        this.lastTurn = exports.prevTurn(exports.getPlayer(move.p));
         this.moveCount--;
     }
 
     /* move a piece from node1 to node2 */
-    Board.prototype.move = function(node1, node2, _no_history, _no_check_turn, _no_move_count) {
-        this.checkLegalMove(node1, node2, _no_check_turn);
+    Board.prototype.move = function(node1, node2, _no_history, _no_check_turn, _no_move_count, _no_check_gameover) {
+        this.checkLegalMove(node1, node2, _no_check_turn, _no_check_gameover);
 
         var p = this.get(node1);
         this._unset(node1);
         this._set(p, node2);
-        this.lastTurn = tateti.getPlayer(p);
         if (!_no_move_count) {
             this.moveCount++;
         }
@@ -284,8 +336,8 @@ var morningwood = require('./morningwood');
     }
 
     /* make various checks and throw a BoardException on error */
-    Board.prototype.checkLegalMove = function(node1, node2, _no_check_turn) {
-        if (this.gameOver) {
+    Board.prototype.checkLegalMove = function(node1, node2, _no_check_turn, _no_check_gameover) {
+        if (this.gameOver && !_no_check_gameover) {
             throw new BoardException("Game over", 41);
         }
 
@@ -295,12 +347,12 @@ var morningwood = require('./morningwood');
 
         var p = this.get(node1);
         if (this.lastTurn != null && !_no_check_turn) {
-            if (this.lastTurn === tateti.getPlayer(p)) {
+            if (this.lastTurn === exports.getPlayer(p)) {
                 throw new BoardException("Wrong turn", 42);
             }
         }
 
-        if (this.countPositions(tateti.getPlayer(p)) < 3) {
+        if (this.countPositions(exports.getPlayer(p)) < 3) {
             throw new BoardException("Place all pieces on the board before moving them", 44);
         }
          
@@ -312,6 +364,28 @@ var morningwood = require('./morningwood');
     /* check if the given board node is an empty cell */
     Board.prototype.isEmpty = function(node) {
         return (this.get(node) === EMPTY);
+    }
+
+    /* get the legal moves from node1 */
+    Board.prototype.getLegalMoves = function(node1) {
+        var ret = [];
+        for (var legal in graph[node1]) {
+            if (this.isEmpty(graph[node1][legal])) {
+                ret.push(graph[node1][legal]);
+            }
+        }
+        return ret;
+    }
+
+    /* get the legal sets, basically all the empty nodes */
+    Board.prototype.getLegalSets = function() {
+        var ret = [];
+        for (var node in this.rep) {
+            if (this.isEmpty(node)) {
+                ret.push(node);
+            }
+        }
+        return ret;
     }
 
     /* check if the move from board node1 to node2 is legal */
@@ -327,18 +401,26 @@ var morningwood = require('./morningwood');
     }
 
     /* low level unset operation */
-    Board.prototype._unset = function(node) {
-        this.rep[node] = EMPTY;
+    Board.prototype._unset = function(node1) {
+        var p = this.get(node1);
+        this.rep[node1] = EMPTY;
+        if (p) {
+            this.piecePositions[exports.getPlayer(p)][p] = null;
+            this.lastTurn = exports.prevTurn(exports.getPlayer(p));
+        }
     }
     /* low level set operation */
     Board.prototype._set = function(p, node1) {
         this.rep[node1] = p;
+        this.lastTurn = exports.getPlayer(p);
+        this.piecePositions[this.lastTurn][p] = node1;
     }
     /* low level clear operation */
     Board.prototype._clear = function() {
         for (var node in nodes) {
             this.rep[nodes[node]] = EMPTY;
         }
+        console.log(this.rep);
     }
     /* low level reset operation */
     Board.prototype._reset = function() {
@@ -348,6 +430,11 @@ var morningwood = require('./morningwood');
         this.gameOver = false; 
         this.gameDrawn = false; 
         this.moveCount = 0;
+
+        for (var p in pieces) {
+            var player = exports.getPlayer(pieces[p]);
+            this.piecePositions[player][pieces[p]] = null;
+        }
 
         /* track history */
         this.history = new History(this);
@@ -367,7 +454,7 @@ var morningwood = require('./morningwood');
     Board.prototype.countAllPositions = function() {
         var count = 0;
         for (var node in this.rep) {
-            if (tateti.getPlayer(this.get(node)) !== EMPTY) {
+            if (exports.getPlayer(this.get(node)) !== EMPTY) {
                 ++count;
             }
         }
@@ -379,7 +466,7 @@ var morningwood = require('./morningwood');
     Board.prototype.countPositions = function(p) {
         var count = 0;
         for (var node in this.rep) {
-            if (tateti.getPlayer(this.get(node)) === p) {
+            if (exports.getPlayer(this.get(node)) === p) {
                 ++count;
             }
         }
@@ -402,7 +489,7 @@ var morningwood = require('./morningwood');
     Board.prototype.getPositions = function(p) {
         var positions = [];
         for (var node in this.rep) {
-            if (rep[node] === p) {
+            if (exports.getPlayer(this.rep[node]) === p) {
                 positions.push(node);
             }
         }
@@ -410,14 +497,25 @@ var morningwood = require('./morningwood');
     }
 
     /* check if the board has a winning combination.
-       If so, return an structure of the winning board nodes;
+       If so, return the winning player.
+       otherwise return null */
+    Board.prototype.checkWinningPlayer = function() {
+        var win = this.checkWinner();
+        if (win) {
+            return win.winner;
+        }
+        return null;
+    }
+
+    /* check if the board has a winning combination.
+       If so, return an structure of the winning board nodes and the winning player;
        otherwise return null */
     Board.prototype.checkWinner = function() {
         var ret = null;
         for (var i in wins) {
-            var p1 = tateti.getPlayer(this.get(wins[i][0]));
-            var p2 = tateti.getPlayer(this.get(wins[i][1]));
-            var p3 = tateti.getPlayer(this.get(wins[i][2]));
+            var p1 = exports.getPlayer(this.get(wins[i][0]));
+            var p2 = exports.getPlayer(this.get(wins[i][1]));
+            var p3 = exports.getPlayer(this.get(wins[i][2]));
 
             if (p1 != EMPTY && p1 === p2 && p2 === p3) {
                 this.gameOver = true;
@@ -471,6 +569,7 @@ var morningwood = require('./morningwood');
         this.dispatchEvent(e);
     }
 
+    /* Human readable representation of the state of the board. */
     Board.prototype.toString = function() {
         function _pad(p) {
             switch (p) {
@@ -630,6 +729,9 @@ var morningwood = require('./morningwood');
         
         P1: P1,
         P2: P2,
+
+        BOARD_ACTION_TYPE_SET: BOARD_ACTION_TYPE_SET,
+        BOARD_ACTION_TYPE_MOVE: BOARD_ACTION_TYPE_MOVE,
 
         EVENT_TYPE_START: EVENT_TYPE_START,
         EVENT_TYPE_STOP:  EVENT_TYPE_STOP,
